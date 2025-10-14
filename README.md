@@ -1,4 +1,4 @@
-![Don't Poke the Bear!](cleanlogo.png)
+![Don't Poke the Bear!](assets/cleanlogo.png)
 
 # Don't Poke the Bear!
 
