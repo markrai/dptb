@@ -1,0 +1,2893 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Don't Poke the Bear!</title>
+  <link rel="icon" type="image/x-icon" href="assets/logo.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@latest/dist/chartjs-chart-matrix.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Mobile-specific tweaks: keep UI minimal */
+    .controls .cell:not(.profile-cell) { display: none; }
+    .toolbar .btn { display: none; }
+    .dropdown-wrapper { width: 100%; }
+    .wrap { padding: 8px; }
+    .inline-logo { font-size: 14.5px !important; letter-spacing: 2px !important; }
+    .inline-logo::before { width: 17.5px !important; height: 17.5px !important; }
+    
+    /* Portrait mode adjustments */
+    @media screen and (orientation: portrait) and (max-width: 768px) {
+      .controls .logo-cell { grid-row: 1; margin-bottom: 8px; }
+      .controls .profile-cell { grid-row: 2; }
+    }
+  </style>
+  <script>
+    // If explicitly requested desktop, bounce back
+    (function(){
+      try {
+        var params = new URLSearchParams(location.search||'');
+        if (params.has('desktop')) {
+          location.replace('index.html' + (location.search || ''));
+        }
+      } catch(_){}
+    })();
+  </script>
+  <style>
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    
+    /* Background image with transparency */
+    body {
+      background-color: #000000;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    
+    /* Separate font sizing for the conf bullet */
+    .conf-dot { font-size: 3px !important; display: inline-block; line-height: 1; }
+    /* Scope override to spousal view to resist inherited mobile downsizing */
+    #spousalSignalsView .conf-dot { font-size: 3px !important; display: inline-block; line-height: 1; }
+    
+    
+    /* Hide profile names in spousal cards */
+    #spousalSignalsView h3 {
+      display: none;
+    }
+    
+    /* Hamburger Menu - Desktop Only */
+    #hamburgerMenu {
+      display: block !important;
+    }
+    
+    /* Hide hamburger menu on mobile */
+    @media screen and (max-width: 1024px) {
+      #hamburgerMenu {
+        display: none !important;
+      }
+    }
+    
+    /* Mobile Portrait Mode - Side by side cards */
+    @media screen and (max-width: 768px) and (orientation: portrait) {
+      .wrap { padding: 8px !important; }
+      
+      #spousalSignalsView > div {
+        flex-direction: row !important;
+        gap: 8px !important;
+      }
+      
+      #spousalSignalsView > div > div {
+        padding: 12px !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        flex: 1 !important;
+      }
+      
+      #spousalSignalsView > div > div > div:first-child {
+        flex: none !important;
+        width: 100% !important;
+        order: 2 !important;
+      }
+      
+      #spousalSignalsView > div > div > div:last-child {
+        flex: none !important;
+        order: 1 !important;
+        justify-content: center !important;
+        height: 60px !important;
+      }
+      
+      #spousalSignalsView > div > div > div:last-child img {
+        height: 50px !important;
+      }
+      
+      #spousalSignalsView h3 {
+        font-size: 14px !important;
+        margin: 0 0 6px 0 !important;
+      }
+      
+      #spousalSignalsView [id*="profile"] {
+        font-size: 18px !important;
+        margin: 6px 0 !important;
+      }
+      
+      #spousalSignalsView [style*="font-size:12px"] {
+        font-size: 10px !important;
+      }
+      
+      #spousalSignalsView > div > div > div:first-child > div {
+        margin-bottom: 12px !important;
+      }
+      
+      #spousalSignalsView > div > div > div:first-child > div:last-child {
+        margin-top: 12px !important;
+        margin-bottom: 0 !important;
+      }
+      
+      #coupleWellness, #jointBurnoutCard {
+        padding: 12px !important;
+        margin-top: 8px !important;
+      }
+      
+      #coupleWellnessValue, #jointBurnoutValue {
+        font-size: 20px !important;
+      }
+      /* Smaller conf bullet on mobile portrait */
+      #spousalSignalsView .conf-dot { font-size: 5px !important; display: inline-block; line-height: 1; }
+
+      /* Profile date elements removed - no longer needed */
+    }
+    
+    /* Mobile Landscape Mode - Compact horizontal layout */
+    @media screen and (max-width: 896px) and (orientation: landscape) {
+      .wrap { padding: 8px !important; }
+      
+      #spousalSignalsView > div {
+        gap: 12px !important;
+      }
+      
+      #spousalSignalsView > div > div {
+        padding: 12px !important;
+        gap: 12px !important;
+      }
+      
+      #spousalSignalsView > div > div > div:first-child {
+        flex: 0 0 150px !important;
+      }
+      
+      #spousalSignalsView h3 {
+        font-size: 14px !important;
+        margin: 0 0 6px 0 !important;
+      }
+      
+      #spousalSignalsView [id*="profile"] {
+        font-size: 20px !important;
+        margin: 6px 0 !important;
+      }
+      
+      #spousalSignalsView [style*="font-size:12px"] {
+        font-size: 10px !important;
+      }
+      
+      #spousalSignalsView > div > div > div:first-child > div {
+        margin-bottom: 12px !important;
+      }
+      
+      #spousalSignalsView > div > div > div:first-child > div:last-child {
+        margin-top: 12px !important;
+        margin-bottom: 0 !important;
+      }
+      
+      #spousalSignalsView > div > div > div:last-child img {
+        height: 80px !important;
+      }
+      
+      #coupleWellness, #jointBurnoutCard {
+        padding: 12px !important;
+        margin-top: 12px !important;
+      }
+      
+      #coupleWellnessValue, #jointBurnoutValue {
+        font-size: 20px !important;
+      }
+      /* Smaller conf bullet on mobile landscape */
+      #spousalSignalsView .conf-dot { font-size: 6px !important; display: inline-block; line-height: 1; }
+
+      /* Profile date elements removed - no longer needed */
+    }
+    
+    /* Extra compact for very small landscape screens */
+    @media screen and (max-height: 500px) and (orientation: landscape) {
+      .wrap { padding: 4px !important; }
+      
+      #spousalSignalsView > div {
+        gap: 8px !important;
+      }
+      
+      #spousalSignalsView > div > div {
+        padding: 8px !important;
+        gap: 8px !important;
+      }
+      
+      #spousalSignalsView > div > div > div:first-child {
+        flex: 0 0 120px !important;
+      }
+      
+      #spousalSignalsView h3 {
+        font-size: 12px !important;
+        margin: 0 0 4px 0 !important;
+      }
+      
+      #spousalSignalsView [id*="profile"] {
+        font-size: 16px !important;
+        margin: 4px 0 !important;
+      }
+      
+      #spousalSignalsView [style*="font-size:12px"] {
+        font-size: 9px !important;
+      }
+      
+      #spousalSignalsView > div > div > div:first-child > div {
+        margin-bottom: 8px !important;
+      }
+      
+      #spousalSignalsView > div > div > div:first-child > div:last-child {
+        margin-top: 8px !important;
+        margin-bottom: 0 !important;
+      }
+      
+      #spousalSignalsView > div > div > div:last-child img {
+        height: 60px !important;
+      }
+      
+      #coupleWellness, #jointBurnoutCard {
+        padding: 8px !important;
+        margin-top: 8px !important;
+      }
+      
+      #coupleWellnessValue, #jointBurnoutValue {
+        font-size: 16px !important;
+      }
+      /* Very small landscape: smallest conf bullet */
+      #spousalSignalsView .conf-dot { font-size: 5px !important; display: inline-block; line-height: 1; }
+
+      #dataDate {
+        font-size: 9px !important;
+      }
+
+      /* Profile date elements removed - no longer needed */
+    }
+    
+    /* Very small mobile screens (portrait) */
+    @media screen and (max-width: 480px) and (orientation: portrait) {
+      .wrap { padding: 4px !important; }
+      
+      #spousalSignalsView > div > div {
+        padding: 12px !important;
+        gap: 10px !important;
+      }
+      
+      #spousalSignalsView h3 {
+        font-size: 14px !important;
+        margin: 0 0 6px 0 !important;
+      }
+      
+      #spousalSignalsView [id*="profile"] {
+        font-size: 20px !important;
+        margin: 6px 0 !important;
+      }
+      
+      #spousalSignalsView [style*="font-size:12px"] {
+        font-size: 10px !important;
+      }
+      
+      #spousalSignalsView > div > div > div:last-child img {
+        height: 60px !important;
+      }
+      
+      #spousalSignalsView > div > div > div:first-child > div {
+        margin-bottom: 12px !important;
+      }
+      
+      #spousalSignalsView > div > div > div:first-child > div:last-child {
+        margin-top: 12px !important;
+        margin-bottom: 0 !important;
+      }
+      
+      #coupleWellness, #jointBurnoutCard {
+        padding: 12px !important;
+        margin-top: 8px !important;
+      }
+      
+      #coupleWellnessValue, #jointBurnoutValue {
+        font-size: 20px !important;
+      }
+      /* Very small portrait: smallest conf bullet */
+      #spousalSignalsView .conf-dot { font-size: 5px !important; display: inline-block; line-height: 1; }
+
+      /* Profile date elements removed - no longer needed */
+    }
+    
+    /* Mobile bottom navigation improvements */
+    @media screen and (max-width: 768px) {
+      #bottomNavigation {
+        padding: 8px 12px !important;
+        margin-top: 12px !important;
+      }
+      
+      #dataDate {
+        font-size: 10px !important;
+        line-height: 1 !important;
+      }
+      
+      #fetchDataBtn {
+        width: 20px !important;
+        height: 20px !important;
+        font-size: 14px !important;
+      }
+      
+      #spousalLogo img {
+        height: 30px !important;
+      }
+      
+      /* Terminal modal mobile styles */
+      #terminalModal > div {
+        width: 95% !important;
+        height: 80% !important;
+        max-width: none !important;
+      }
+      
+      #terminalModal .terminal-header {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+      }
+      
+      #terminalContent {
+        padding: 12px !important;
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+      }
+    }
+    
+    /* Shake animation for profile limit message */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+      20%, 40%, 60%, 80% { transform: translateX(2px); }
+    }
+    
+    .shake {
+      animation: shake 0.5s ease-in-out;
+    }
+
+    /* Mobile: temporarily hide the confidence dot entirely */
+    @media screen and (max-width: 1024px), (pointer: coarse) {
+      #spousalSignalsView .conf-dot {
+        display: none !important;
+        font-size: 0 !important; /* extra guard */
+        line-height: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Hamburger Menu - Desktop Only -->
+    <div id="hamburgerMenu" style="position:fixed;top:20px;right:20px;z-index:1000;display:none;">
+      <button id="hamburgerBtn" style="background:none;border:none;cursor:pointer;" title="Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 12H21M3 6H21M3 18H21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <!-- Dropdown Menu -->
+      <div id="hamburgerDropdown" style="position:absolute;top:100%;right:0;background:#1a2349;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);min-width:180px;display:none;margin-top:8px;">
+        <button class="menu-item" data-action="manage-profiles" style="width:100%;padding:12px 16px;background:none;border:none;color:#e6eaf3;text-align:left;cursor:pointer;border-radius:8px 8px 0 0;transition:background-color 0.2s;">
+          Manage Profiles
+        </button>
+        <button class="menu-item" data-action="about" style="width:100%;padding:12px 16px;background:none;border:none;color:#e6eaf3;text-align:left;cursor:pointer;border-radius:0 0 8px 8px;transition:background-color 0.2s;">
+          About
+        </button>
+      </div>
+    </div>
+     <!-- About Modal -->
+     <div id="aboutModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;">
+              <img src="assets/cleanlogo.png" alt="DPTB" style="height:96px;width:auto;">
+              <span style="margin-left:6px;color:#ffd700;font-size:18px;font-weight:600;font-family:'Sour Gummy',cursive;">Don't Poke the Bear! <span id="appVersion" style="font-size:14px;color:#9aa5c6;">v1.0</span></span>
+            </div>
+            <button class="modal-close" id="aboutModalClose" style="background:none;border:none;color:#9aa5c6;font-size:24px;cursor:pointer;padding:4px;">&times;</button>
+          </div>
+          
+          <!-- App Description -->
+          <div style="margin-bottom:20px;padding:16px;background:#1a2349;border-radius:8px;">
+            <p style="color:#e6eaf3;line-height:1.5;margin:0;">
+              This app is for couples to monitor their joint wellness metrics from their Fitbit data. For inquiries, contact me at <a href="mailto:markraidc@gmail.com" style="color:#ffd700;text-decoration:none;">markraidc@gmail.com</a>
+            </p>
+          </div>
+          
+          <!-- No Profiles State -->
+          <div id="noProfilesState" style="display:none;text-align:center;padding:20px;">
+            <h3 style="color:#9aa5c6;margin-bottom:16px;">No Profiles Found</h3>
+            <p style="color:#9aa5c6;margin-bottom:16px;">Create your first profile to get started with FitBaus.</p>
+            <button id="createFirstProfileBtn" class="btn btn-primary">Create Profile</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card" style="padding:16px;position:relative;">
+      <!-- Hidden stubs so mobile.html JS works -->
+      <div style="display:none;">
+        <select id="profileSelect">
+          <option value="ammar">Ammar</option>
+          <option value="nour">Nour</option>
+        </select>
+      </div>
+      
+       <!-- Spousal Signals View -->
+       <div id="spousalSignalsView" style="display:block;">
+        <div style="display:flex;gap:16px;justify-content:center;">
+          <div style="flex:1;background:#1a2349;border-radius:12px;padding:20px;display:flex;gap:20px;position:relative;">
+            <!-- Data section on the left -->
+            <div style="flex:0 0 200px;text-align:center;">
+              <h3 style="color:#ffffff;margin:0 0 10px 0;">Profile 1</h3>
+              <div style="margin-bottom:20px;">
+                <div id="profile1HRV" style="font-size:32px;font-weight:bold;color:#ffcc66;margin:10px 0;">--</div>
+                <div style="font-size:12px;color:#9aa5c6;">Heart Rate Variability</div>
+              </div>
+              <div>
+                <div id="profile1Sleep" style="font-size:32px;font-weight:bold;color:#4a90e2;margin:10px 0;">--</div>
+                <div style="font-size:12px;color:#9aa5c6;">Sleep Score</div>
+              </div>
+              <div style="margin-top:20px;">
+                <div id="profile1Wellness" style="font-size:28px;font-weight:bold;color:#4CAF50;margin:10px 0;">--</div>
+                <div style="font-size:12px;color:#9aa5c6;">Wellness Score</div>
+              </div>
+            </div>
+            <!-- Image section on the right -->
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+              <img id="husbandImage" src="assets/husband.png" alt="Husband" style="height:120px;width:auto;object-fit:contain;cursor:pointer;" title="Select profiles">
+            </div>
+          </div>
+          <div style="flex:1;background:#1a2349;border-radius:12px;padding:20px;display:flex;gap:20px;position:relative;">
+            <!-- Data section on the left -->
+            <div style="flex:0 0 200px;text-align:center;">
+              <h3 style="color:#ffffff;margin:0 0 10px 0;">Profile 2</h3>
+              <div style="margin-bottom:20px;">
+                <div id="profile2HRV" style="font-size:32px;font-weight:bold;color:#ffcc66;margin:10px 0;">--</div>
+                <div style="font-size:12px;color:#9aa5c6;">Heart Rate Variability</div>
+              </div>
+              <div>
+                <div id="profile2Sleep" style="font-size:32px;font-weight:bold;color:#4a90e2;margin:10px 0;">--</div>
+                <div style="font-size:12px;color:#9aa5c6;">Sleep Score</div>
+              </div>
+              <div style="margin-top:20px;">
+                <div id="profile2Wellness" style="font-size:28px;font-weight:bold;color:#4CAF50;margin:10px 0;">--</div>
+                <div style="font-size:12px;color:#9aa5c6;">Wellness Score</div>
+              </div>
+            </div>
+            <!-- Image section on the right -->
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+              <img id="wifeImage" src="assets/wife.png" alt="Wife" style="height:120px;width:auto;object-fit:contain;cursor:pointer;" title="Select profiles">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- Dedicated Bottom Navigation Footer -->
+    <div id="bottomNavigation" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;margin-top:16px;background:transparent;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div id="dataDate" style="font-size:11px;color:#6b7280;font-style:italic;line-height:1;">--</div>
+        <button id="fetchDataBtn" style="background:none;border:none;color:#6b7280;cursor:pointer;padding:4px;font-size:16px;display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px;transition:all 0.2s ease;flex-shrink:0;" title="Fetch New Data" onmouseover="this.style.background='rgba(154,165,198,0.1)'" onmouseout="this.style.background='none'">
+          ↻
+        </button>
+      </div>
+      <div id="spousalLogo" style="display:flex;align-items:center;">
+        <img src="assets/cleanlogo.png" alt="FitBaus" style="height:40px;width:auto;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Terminal Modal for Fetch Progress -->
+  <div id="terminalModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:10000;font-family:'Courier New',monospace;">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:800px;height:70%;background:#000;border:2px solid #ffd700;border-radius:8px;overflow:hidden;">
+      <!-- Terminal Header -->
+      <div style="background:#1a1a1a;padding:12px 16px;border-bottom:1px solid #ffd700;display:flex;justify-content:space-between;align-items:center;">
+        <div style="color:#ffd700;font-size:14px;font-weight:bold;">FitBaus Data Fetch Terminal</div>
+        <button id="closeTerminalBtn" style="background:none;border:none;color:#ffd700;cursor:pointer;font-size:18px;padding:4px;" title="Close Terminal">×</button>
+      </div>
+      <!-- Terminal Content -->
+      <div id="terminalContent" style="padding:16px 16px 48px 16px;height:calc(100% - 60px);overflow-y:auto;color:#00ff00;font-size:12px;line-height:1.4;white-space:pre-wrap;">
+        <div style="color:#00ff00;">Starting data fetch operation...</div>
+        <div style="color:#888;">Waiting for job to initialize...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Management Modals -->
+  <!-- No Profile Modal -->
+  <div id="noProfileModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;">
+            <img src="assets/cleanlogo.png" alt="FitBaus" style="height:96px;width:auto;">
+            <span style="margin-left:6px;color:#ffd700;font-size:18px;font-weight:600;font-family:'Sour Gummy',cursive;">Don't Poke the Bear!</span>
+          </div>
+          <button class="modal-close" id="noProfileModalClose" style="background:none;border:none;color:#9aa5c6;font-size:24px;cursor:pointer;padding:4px;">&times;</button>
+        </div>
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+          <button class="tab-btn active" data-tab="new-profile">New Profile</button>
+          <button class="tab-btn" data-tab="existing-profiles">Existing Profiles</button>
+        </div>
+        
+        <!-- New Profile Tab -->
+        <div id="newProfileTab" class="tab-content active">
+          <div id="profileCreationForm">
+            <h3>Create New Profile</h3>
+            <div id="profileLimitMessage" style="display:none;color:#ffd700;font-size:14px;margin-bottom:16px;font-weight:500;transition:transform 0.1s ease;">
+              You already have 2 profiles set up!
+            </div>
+            <form id="createProfileForm">
+              <div class="form-group">
+                <label for="profileName">Profile Name:</label>
+                <input type="text" id="profileName" name="profileName" required 
+                       placeholder="e.g., john, jane, myprofile" 
+                       pattern="[A-Za-z0-9_\-]+" 
+                       title="Only letters, numbers, hyphens, and underscores allowed">
+              </div>
+              <div class="form-group">
+                <label for="clientId">Fitbit Client ID:</label>
+                <input type="text" id="clientId" name="clientId" required 
+                       placeholder="Your Fitbit App Client ID">
+              </div>
+              <div class="form-group">
+                <label for="clientSecret">Fitbit Client Secret:</label>
+                <input type="password" id="clientSecret" name="clientSecret" required 
+                       placeholder="Your Fitbit App Client Secret">
+              </div>
+              <div class="form-actions">
+                <button type="submit" id="createProfileBtn" class="btn btn-primary">Create Profile</button>
+                <div id="profileCreationStatus" class="status-message"></div>
+              </div>
+            </form>
+          </div>
+          <div id="profileCreatedSuccess" style="display: none;">
+            <h3>✅ Profile Created Successfully!</h3>
+            <p>Your profile has been created. You can now proceed to authorize with Fitbit.</p>
+            <button id="authorizeBtn" class="btn btn-primary">Authorize with Fitbit</button>
+            <div id="authorizationStatus" class="status-message"></div>
+          </div>
+        </div>
+        
+        <!-- Existing Profiles Tab -->
+        <div id="existingProfilesTab" class="tab-content">
+          <h3>Manage Existing Profiles</h3>
+          <div id="profilesList">
+            <div id="profilesLoading" class="status-message info">Loading profiles...</div>
+          </div>
+          <div id="profileDeletionStatus" class="status-message"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Authorize Profile Modal -->
+  <div id="authorizeProfileModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="authorizeProfileTitle">Authorize Profile</h2>
+        <button class="modal-close" id="authorizeProfileModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="authorizeProfileIntro" class="status-message info" style="display:none;"></div>
+        <div id="authorizeProfileContent"></div>
+        <div id="authorizeProfileStatus" class="status-message" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Authorization Acknowledgement Modal -->
+  <div id="authAckModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Please Confirm</h2>
+        <button class="modal-close" id="authAckClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="status-message info" style="text-align:left">
+          For this to work, you MUST be logged out of any other user accounts on:<br>
+          <a href="https://www.fitbit.com/dashboard" target="_blank" rel="noopener">https://www.fitbit.com/dashboard</a><br>
+          <a href="https://dev.fitbit.com/apps" target="_blank" rel="noopener">https://dev.fitbit.com/apps</a><br>
+          and you must be logged into the accounts for the profile you are trying to activate.<br><br>
+          Once you press okay, you will go to Fitbit's authorization page, which will then redirect you to the call-back URL, with the code. Copy this URL from the address bar, and paste it back here.
+        </div>
+        <div class="form-actions" style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn-primary" id="authAckOkBtn">Okay</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Delete Modal -->
+  <div id="confirmDeleteModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="confirmDeleteTitle">Delete Profile</h2>
+        <button class="modal-close" id="confirmDeleteClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="confirmDeleteBody" class="status-message info" style="text-align:left"></div>
+        <div id="confirmDeleteActions" class="form-actions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+          <button class="btn-secondary" id="confirmDeleteCancelBtn">Cancel</button>
+          <button class="btn-danger" id="confirmDeleteProceedBtn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Flag to prevent script.js from running its initialization
+    window.SKIP_MAIN_INIT = true;
+  </script>
+  <script src="version.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // Profile Management Functions
+    let availableProfiles = [];
+    let selectedProfile1 = null;
+    let selectedProfile2 = null;
+    
+    function isMobileLikeViewport() {
+      if (typeof window === 'undefined') return false;
+      try {
+        if (typeof window.matchMedia === 'function') {
+          const narrow = window.matchMedia('(max-width: 1024px)').matches;
+          const coarse = window.matchMedia('(pointer: coarse)').matches;
+          const anyCoarse = window.matchMedia('(any-pointer: coarse)').matches;
+          if (narrow || coarse || anyCoarse) {
+            return true;
+          }
+        }
+      } catch (err) {
+        console.warn('matchMedia check for conf dot failed', err);
+      }
+      const maxTouchPoints = typeof navigator !== 'undefined'
+        ? (navigator.maxTouchPoints || navigator.msMaxTouchPoints || 0)
+        : 0;
+      if (maxTouchPoints > 0) return true;
+      return window.innerWidth <= 1024;
+    }
+
+    function enforceConfDotVisibility() {
+      if (typeof document === 'undefined') return;
+      const mobileLike = isMobileLikeViewport();
+      const dots = document.querySelectorAll('#spousalSignalsView .conf-dot');
+      dots.forEach(dot => {
+        if (!dot) return;
+        if (mobileLike) {
+          dot.style.display = 'none';
+          dot.style.fontSize = '0';
+          dot.style.lineHeight = '0';
+          dot.setAttribute('aria-hidden', 'true');
+          dot.textContent = '';
+        } else {
+          dot.removeAttribute('aria-hidden');
+          dot.style.removeProperty('display');
+          dot.style.removeProperty('font-size');
+          dot.style.removeProperty('line-height');
+          if (!dot.textContent.trim()) {
+            dot.textContent = '\u2022';
+          }
+        }
+      });
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', enforceConfDotVisibility);
+      window.addEventListener('orientationchange', enforceConfDotVisibility);
+    }
+    if (typeof document !== 'undefined') {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', enforceConfDotVisibility);
+      } else {
+        enforceConfDotVisibility();
+      }
+      if (typeof MutationObserver !== 'undefined') {
+        const attachObserver = () => {
+          const target = document.getElementById('spousalSignalsView');
+          if (!target) return;
+          const observer = new MutationObserver(() => enforceConfDotVisibility());
+          observer.observe(target, { childList: true, subtree: true });
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', attachObserver);
+        } else {
+          attachObserver();
+        }
+      }
+    }
+    
+    // Load available profiles and auto-select first two
+    async function loadAvailableProfiles() {
+      try {
+        const response = await fetch('/api/profiles');
+        const profiles = await response.json();
+        availableProfiles = profiles;
+        
+        const profile1Display = document.getElementById('profile1Display');
+        const profile2Display = document.getElementById('profile2Display');
+        const noProfilesState = document.getElementById('noProfilesState');
+        
+        // Clear existing displays (only if elements exist)
+        if (profile1Display) profile1Display.textContent = '--';
+        if (profile2Display) profile2Display.textContent = '--';
+        
+        if (profiles.length === 0) {
+          // Show no profiles state
+          if (noProfilesState) noProfilesState.style.display = 'block';
+          return;
+        }
+        
+        // Hide no profiles state
+        if (noProfilesState) noProfilesState.style.display = 'none';
+        
+        // Display first two profiles (only if elements exist)
+        if (profiles.length >= 1) {
+          const profile1Name = typeof profiles[0] === 'string' ? profiles[0] : profiles[0].name;
+          if (profile1Display) profile1Display.textContent = profile1Name;
+          selectedProfile1 = profile1Name;
+        }
+        
+        if (profiles.length >= 2) {
+          const profile2Name = typeof profiles[1] === 'string' ? profiles[1] : profiles[1].name;
+          if (profile2Display) profile2Display.textContent = profile2Name;
+          selectedProfile2 = profile2Name;
+          
+          // Update profile titles
+          updateProfileTitles();
+          
+          // Load data for selected profiles
+          loadSpousalHRVData();
+        }
+              
+             } catch (error) {
+        console.error('Error loading profiles:', error);
+        const noProfilesState = document.getElementById('noProfilesState');
+        if (noProfilesState) {
+          noProfilesState.style.display = 'block';
+          noProfilesState.innerHTML = '<h3 style="color:#ff6b6b;margin-bottom:16px;">Error Loading Profiles</h3><p style="color:#9aa5c6;">Please refresh the page and try again.</p>';
+        }
+      }
+    }
+    
+    // Update profile titles in the display
+    function updateProfileTitles() {
+      const profileTitles = document.querySelectorAll('#spousalSignalsView h3');
+      if (profileTitles.length >= 2) {
+        profileTitles[0].textContent = selectedProfile1 || 'Profile 1';
+        profileTitles[1].textContent = selectedProfile2 || 'Profile 2';
+      }
+    }
+
+    // About modal helpers
+    function showAboutModal() {
+      const m = document.getElementById('aboutModal');
+      if (m) {
+        m.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        loadProfiles();
+      }
+    }
+    function closeAboutModal() {
+      const m = document.getElementById('aboutModal');
+      if (m) {
+        m.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+    
+    // Profile selection change handlers
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load version number
+      if (window.DPTB_VERSION) {
+        const versionElement = document.getElementById('appVersion');
+        if (versionElement) {
+          versionElement.textContent = window.DPTB_VERSION;
+        }
+      }
+      
+      // Create first profile button
+      const createFirstProfileBtn = document.getElementById('createFirstProfileBtn');
+      if (createFirstProfileBtn) {
+        createFirstProfileBtn.addEventListener('click', function() {
+          showNoProfileModal(false);
+        });
+      }
+      
+
+      // Wire spouse images to open the detailed profile management modal directly
+      const husbandImg = document.getElementById('husbandImage');
+      const wifeImg = document.getElementById('wifeImage');
+      if (husbandImg) husbandImg.addEventListener('click', function() {
+        showNoProfileModal(true);
+      });
+      if (wifeImg) wifeImg.addEventListener('click', function() {
+        showNoProfileModal(true);
+      });
+
+      // Selection modal close (X button and backdrop click)
+      const aboutModalClose = document.getElementById('aboutModalClose');
+      if (aboutModalClose) aboutModalClose.addEventListener('click', closeAboutModal);
+      const aboutModal = document.getElementById('aboutModal');
+      if (aboutModal) {
+        aboutModal.addEventListener('click', function(e) {
+          if (e.target === aboutModal) closeAboutModal();
+        });
+      }
+      
+      // Load profiles on page load
+      loadAvailableProfiles();
+    });
+    
+    // Override getFirstTwoProfiles to use selected profiles
+    function getFirstTwoProfiles() {
+      if (selectedProfile1 && selectedProfile2) {
+        return { 
+          profileIds: [selectedProfile1, selectedProfile2], 
+          labels: [selectedProfile1, selectedProfile2] 
+        };
+      }
+      return { profileIds: [null, null], labels: ['No Profile', 'No Profile'] };
+    }
+    
+     // Global wellness calculation functions
+      const PARAMS = {
+        W_baseline: 28,
+        gap: 2,
+        alpha_sleep: 0.4,
+        alpha_hrv: 0.3,
+        w_sleep: 0.6,
+        w_hrv: 0.4,
+        HRV_min: 20,
+        HRV_max: 120,
+        mod_cap: 8,
+        slope_days: 7,
+        slope_pos: 1.0,
+        slope_neg: -1.0
+      };
+
+      async function loadProfileSeries(profileId){
+        // Build CSV paths using BASE_PREFIX from script.js
+        const sleepPath = `${BASE_PREFIX}profiles/${profileId}/csv/fitbit_sleep.csv`;
+        const hrvPath   = `${BASE_PREFIX}profiles/${profileId}/csv/fitbit_hrv.csv`;
+        const rhrPath   = `${BASE_PREFIX}profiles/${profileId}/csv/fitbit_rhr.csv`;
+        const stepsPath = `${BASE_PREFIX}profiles/${profileId}/csv/fitbit_activity.csv`;
+        
+        // Use helpers from script.js
+        const [sleepText, hrvText, rhrText, stepsText] = await Promise.all([
+          fetchCSV(sleepPath).catch(()=>''),
+          fetchCSV(hrvPath).catch(()=>''),
+          fetchCSV(rhrPath).catch(()=>''),
+          fetchCSV(stepsPath).catch(()=>'')
+        ]);
+        
+         const sleepRaw = sleepText ? parseCSV(sleepText) : [];
+         const hrvRaw = hrvText ? parseCSV(hrvText) : [];
+         const rhrRaw = rhrText ? parseCSV(rhrText) : [];
+         const stepsRaw = stepsText ? parseCSV(stepsText) : [];
+         
+         const sleepRows = normalizeSleepRows(sleepRaw);
+         const hrvRows = normalizeHRVRows(hrvRaw);
+         const rhrRows = normalizeRHRRows(rhrRaw);
+         const stepsRows = normalizeStepsRows(stepsRaw);
+         
+         const sleepDaily = aggregateSleepDaily(sleepRows);
+         const hrvDaily = aggregateHRVDaily(hrvRows);
+         const dates = dedupeSorted([...Object.keys(sleepDaily), ...Object.keys(hrvDaily)]);
+        
+        return { 
+          id: profileId, 
+          dates, 
+          sleepDaily, 
+          hrvDaily,
+          rhrRows,      // Keep as array for RHR elevation calculation
+          stepsRows     // Keep as array for steps analysis
+        };
+      }
+
+      function normalizeHRVRows(rows){
+        try{
+          return rows.map(r=>{
+            const d = parseDate(r.date);
+            const iso = d ? d.toISOString().slice(0,10) : null;
+            const val = Number(r.dailyRmssd ?? r.rmssd);
+            return { dateISO: iso, rmssd: Number.isFinite(val) ? val : NaN };
+          }).filter(r=> r.dateISO && Number.isFinite(r.rmssd));
+        }catch(_){ return [] }
+      }
+
+      function normalizeRHRRows(rows){
+        return rows.map(r=>{
+          const d = parseDate(r.date);
+          const rhr = Number(r.resting_heart_rate);
+          const iso = d ? d.toISOString().slice(0,10) : null;
+          return { 
+            dateISO: iso, 
+            date: d, 
+            rhr: Number.isFinite(rhr) ? rhr : NaN 
+          };
+        }).filter(r=>r.dateISO && Number.isFinite(r.rhr));
+      }
+
+      function normalizeStepsRows(rows){
+        return rows.map(r=>{
+          const d = parseDate(r.date || r.dateTime);
+          const steps = Number(r.steps || r.value);
+          const iso = d ? d.toISOString().slice(0,10) : null;
+          return { 
+            dateISO: iso, 
+            date: d, 
+            steps: Number.isFinite(steps) ? steps : NaN 
+          };
+        }).filter(r=>r.dateISO && Number.isFinite(r.steps));
+      }
+
+      function aggregateSleepDaily(rows){
+        // Prefer main sleep; else pick by largest minutesAsleep
+        const map = new Map();
+        for(const r of rows){
+          const k = r.dateISO;
+          if (!k) continue;
+          const prev = map.get(k);
+          if (!prev) { map.set(k, r); continue; }
+          const prevMain = !!prev.isMainSleep;
+          const curMain = !!r.isMainSleep;
+          if (curMain && !prevMain) { map.set(k, r); continue; }
+          if (curMain === prevMain) {
+            const prevMin = Number.isFinite(prev.minutesAsleep) ? prev.minutesAsleep : -1;
+            const curMin = Number.isFinite(r.minutesAsleep) ? r.minutesAsleep : -1;
+            if (curMin > prevMin) map.set(k, r);
+          }
+        }
+        const out = {};
+        for(const [k,v] of map.entries()) out[k] = v.sleepScore;
+        return out;
+      }
+
+      function aggregateHRVDaily(rows){
+        const out = {};
+        for(const r of rows){
+          if (r.dateISO && Number.isFinite(r.rmssd)) out[r.dateISO] = r.rmssd;
+        }
+        return out;
+      }
+
+      function dedupeSorted(arr){
+        const s = Array.from(new Set(arr.filter(Boolean)));
+        s.sort((a,b)=> a.localeCompare(b));
+        return s;
+      }
+
+      function quantile(values, p){
+        const a = values.filter(Number.isFinite).slice().sort((x,y)=>x-y);
+        if (a.length === 0) return NaN;
+        const idx = (a.length - 1) * p;
+        const lo = Math.floor(idx), hi = Math.ceil(idx);
+        if (lo === hi) return a[lo];
+        return a[lo] + (a[hi] - a[lo]) * (idx - lo);
+      }
+
+      function median(values){
+        return quantile(values, 0.5);
+      }
+
+      function mad(values){
+        const m = median(values);
+        const dev = values.filter(Number.isFinite).map(v=>Math.abs(v - m));
+        const md = median(dev);
+        return (Number.isFinite(md) ? Math.max(1, md) : 1); // floor at 1
+      }
+
+      function normalCdf(x){
+        // Abramowitz-Stegun approximation
+        const a1=0.254829592, a2=-0.284496736, a3=1.421413741, a4=-1.453152027, a5=1.061405429;
+        const sign = x < 0 ? -1 : 1;
+        const absx = Math.abs(x)/Math.sqrt(2);
+        const t = 1/(1+0.3275911*absx);
+        const erf = 1 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*Math.exp(-absx*absx);
+        return 0.5*(1 + sign*erf);
+      }
+
+      function winsorizeHRV(x, history){
+        const vals = history.filter(Number.isFinite);
+        if (vals.length >= 10){
+          const lo = quantile(vals, 0.10), hi = quantile(vals, 0.90);
+          return Math.max(lo, Math.min(hi, x));
+        }
+        return Math.max(PARAMS.HRV_min, Math.min(PARAMS.HRV_max, x));
+      }
+
+      function robustNormalize(series, dates){
+        // Build normalized S_norm and HRV_norm per day with baseline windows and winsorized HRV
+        const { W_baseline:W, gap, HRV_min, HRV_max } = PARAMS;
+        const S_norm = new Map();
+        const HRV_norm = new Map();
+        const usedRobust = { sleep: new Map(), hrv: new Map() };
+
+        const getS = d => Number.isFinite(series.sleepDaily[d]) ? series.sleepDaily[d] : NaN;
+        const getH = d => Number.isFinite(series.hrvDaily[d]) ? series.hrvDaily[d] : NaN;
+
+        const hHistory = []; // rolling HRV history of valid values (for winsorization only)
+        for (let i=0;i<dates.length;i++){
+          const d = dates[i];
+          const sRaw = getS(d);
+          const hRaw = getH(d);
+
+          // Build baseline window indices: [i-gap-W+1, i-gap]
+          const bEnd = i - gap;
+          const bStart = bEnd - (W - 1);
+          const bIdx = [];
+          for (let j=bStart; j<=bEnd; j++) if (j>=0 && j<i) bIdx.push(j);
+
+          const sHist = bIdx.map(k => getS(dates[k])).filter(Number.isFinite);
+          const hHist = bIdx.map(k => getH(dates[k])).filter(Number.isFinite);
+
+          // Winsorize HRV using last W valid values (we can use hHistory as well)
+          const recentH = hHistory.slice(-W);
+          const hClean = Number.isFinite(hRaw) ? winsorizeHRV(hRaw, recentH.length?recentH:hHist) : NaN;
+
+          // Decide normalization mode for each signal
+          const enoughDays = i >= (W + gap);
+          const robustSleep = enoughDays && sHist.length >= 10;
+          const robustHRV = enoughDays && hHist.length >= 10;
+
+          // Sleep normalization
+          if (Number.isFinite(sRaw)){
+            if (robustSleep){
+              const medS = median(sHist);
+              const madS = mad(sHist);
+              const zS = (sRaw - medS) / (1.4826 * madS);
+              const pS = 100 * normalCdf(zS);
+              S_norm.set(d, Math.max(0, Math.min(100, pS)));
+              usedRobust.sleep.set(d, true);
+            } else {
+              const v = Math.max(0, Math.min(100, sRaw));
+              S_norm.set(d, v);
+              usedRobust.sleep.set(d, false);
+            }
+          }
+
+          // HRV normalization
+          if (Number.isFinite(hClean)){
+            if (robustHRV){
+              const medH = median(hHist);
+              const madH = mad(hHist);
+              const zH = (hClean - medH) / (1.4826 * madH);
+              const pH = 100 * normalCdf(zH);
+              HRV_norm.set(d, Math.max(0, Math.min(100, pH)));
+              usedRobust.hrv.set(d, true);
+            } else {
+              const v = 100 * (hClean - HRV_min) / (HRV_max - HRV_min);
+              HRV_norm.set(d, Math.max(0, Math.min(100, v)));
+              usedRobust.hrv.set(d, false);
+            }
+          }
+
+          // Update HRV history after processing day i
+          if (Number.isFinite(hRaw)) hHistory.push(hRaw);
+        }
+
+        return { S_norm, HRV_norm, usedRobust };
+      }
+
+      function emaSeries(valuesMap, dates, alpha){
+        const out = new Map();
+        let prev = null;
+        for(const d of dates){
+          const v = valuesMap.has(d) ? valuesMap.get(d) : NaN;
+          if (Number.isFinite(v)){
+            prev = (prev == null) ? v : (alpha * v + (1 - alpha) * prev);
+            out.set(d, prev);
+          } else if (prev != null) {
+            // carry forward unchanged (do not create a new sample)
+            out.set(d, prev);
+          }
+        }
+        return out;
+      }
+
+      function olsSlope(lastNValues){
+        const ys = lastNValues.filter(Number.isFinite);
+        const n = ys.length;
+        if (n < 2) return 0;
+        // x = 0..n-1
+        let sumX=0, sumY=0, sumXX=0, sumXY=0;
+        for(let i=0;i<n;i++){
+          const x=i, y=ys[i];
+          sumX += x; sumY += y; sumXX += x*x; sumXY += x*y;
+        }
+        const denom = n*sumXX - sumX*sumX;
+        if (denom === 0) return 0;
+        return (n*sumXY - sumX*sumY)/denom; // points per day
+      }
+
+      function computeWellness(series){
+        const dates = series.dates;
+        if (!dates || dates.length === 0) return null;
+
+        const { S_norm, HRV_norm, usedRobust } = robustNormalize(series, dates);
+        const S_sm = emaSeries(S_norm, dates, PARAMS.alpha_sleep);
+        const H_sm = emaSeries(HRV_norm, dates, PARAMS.alpha_hrv);
+
+         // Choose evaluation day t as the latest date with at least one signal
+         let t = null;
+         for (let i=dates.length-1; i>=0; i--){
+           const d = dates[i];
+           if (S_norm.has(d) || HRV_norm.has(d)) { t = d; break; }
+         }
+         if (!t) return null;
+
+        // Calculate day-over-day trends
+        const currentIndex = dates.indexOf(t);
+        const previousIndex = currentIndex - 1;
+        let hrvTrend = null, sleepTrend = null;
+        
+        if (previousIndex >= 0) {
+          const previousDate = dates[previousIndex];
+          const currentHRV = series.hrvDaily[t];
+          const previousHRV = series.hrvDaily[previousDate];
+          const currentSleep = series.sleepDaily[t];
+          const previousSleep = series.sleepDaily[previousDate];
+          
+          if (Number.isFinite(currentHRV) && Number.isFinite(previousHRV)) {
+            hrvTrend = currentHRV > previousHRV ? 'up' : currentHRV < previousHRV ? 'down' : 'same';
+          }
+          
+          if (Number.isFinite(currentSleep) && Number.isFinite(previousSleep)) {
+            sleepTrend = currentSleep > previousSleep ? 'up' : currentSleep < previousSleep ? 'down' : 'same';
+          }
+        }
+
+        const sToday = S_norm.get(t); // may be undefined
+        const hToday = HRV_norm.get(t);
+        const sSmToday = S_sm.get(t);
+        const hSmToday = H_sm.get(t);
+
+        // Base Meta score with renormalized weights if needed
+        const haveS = Number.isFinite(sSmToday);
+        const haveH = Number.isFinite(hSmToday);
+        let wS = PARAMS.w_sleep, wH = PARAMS.w_hrv;
+        if (haveS && !haveH) { wS = 1; wH = 0; }
+        else if (!haveS && haveH) { wS = 0; wH = 1; }
+        else if (!haveS && !haveH) return {
+          date: t,
+          metaFinal: NaN,
+          latestSleep: Number.isFinite(series.sleepDaily[t]) ? series.sleepDaily[t] : NaN,
+          latestHRV: Number.isFinite(series.hrvDaily[t]) ? series.hrvDaily[t] : NaN
+        };
+        const metaBase = (wS * (sSmToday || 0)) + (wH * (hSmToday || 0));
+
+        // Dynamic modifiers
+        let pen_sleep = 0;
+        const robustSleepToday = usedRobust.sleep.get(t) === true;
+        if (robustSleepToday) {
+          // 3-day mean of ΔS = S_norm - 50
+          const last3 = [];
+          for (let i=dates.indexOf(t), count=0; i>=0 && count<3; i--){
+            const d = dates[i];
+            if (S_norm.has(d)) { last3.push(S_norm.get(d) - 50); count++; }
+          }
+          if (last3.length >= 3) {
+            const mean3 = last3.reduce((a,b)=>a+b,0)/3;
+            if (mean3 < -10) pen_sleep = -5;
+          }
+        }
+
+        // 7-day slopes of smoothed series
+        function lastNSmoothed(map, uptoDate, n){
+          const idx = dates.indexOf(uptoDate);
+          const vals = [];
+          for (let i=Math.max(0, idx - (n-1)); i<=idx; i++){
+            const d = dates[i];
+            vals.push(map.has(d) ? map.get(d) : NaN);
+          }
+          return vals;
+        }
+        const hSlope = olsSlope(lastNSmoothed(H_sm, t, PARAMS.slope_days));
+        const sSlope = olsSlope(lastNSmoothed(S_sm, t, PARAMS.slope_days));
+        let mod_hrv = 0;
+        if (haveH) {
+          if (hSlope >= PARAMS.slope_pos) mod_hrv = +3; else if (hSlope <= PARAMS.slope_neg) mod_hrv = -3; else mod_hrv = 0;
+        }
+        let boost_sync = 0;
+        if (haveH && haveS && hSlope >= 0.5 && sSlope >= 0.5) boost_sync = +2;
+
+        let mod_total = pen_sleep + mod_hrv + boost_sync;
+        mod_total = Math.max(-PARAMS.mod_cap, Math.min(PARAMS.mod_cap, mod_total));
+
+        const metaFinal = Math.max(0, Math.min(100, metaBase + mod_total));
+
+        return {
+          date: t,
+          metaBase,
+          mod_total,
+          metaFinal,
+          sSlope, hSlope,
+          sSmToday, hSmToday,
+          sNormToday: sToday, hNormToday: hToday,
+          usedRobustToday: { sleep: usedRobust.sleep.get(t) === true, hrv: usedRobust.hrv.get(t) === true },
+          latestSleep: Number.isFinite(series.sleepDaily[t]) ? series.sleepDaily[t] : NaN,
+          latestHRV: Number.isFinite(series.hrvDaily[t]) ? series.hrvDaily[t] : NaN,
+         hrvTrend, sleepTrend,
+       };
+     }
+
+     function getTrendArrow(trend) {
+       if (trend === 'up') return '<span style="color: #4ade80; font-size: 14px; margin-left: 4px;">↗</span>';
+       if (trend === 'down') return '<span style="color: #ef4444; font-size: 14px; margin-left: 4px;">↘</span>';
+       return '';
+     }
+
+      function coupleAggregate(a, b){
+        if (!a && !b) return null;
+        if (a && !b) return { score: clampScore((Number.isFinite(a.metaFinal)?a.metaFinal:0) - 15), label: 'low confidence', details: { only: 'A' } };
+        if (!a && b) return { score: clampScore((Number.isFinite(b.metaFinal)?b.metaFinal:0) - 15), label: 'low confidence', details: { only: 'B' } };
+        const A = Number.isFinite(a.metaFinal) ? a.metaFinal : null;
+        const B = Number.isFinite(b.metaFinal) ? b.metaFinal : null;
+        if (A==null && B==null) return null;
+        if (A==null && B!=null) return { score: clampScore(B - 15), label: 'low confidence', details: { only: 'B' } };
+        if (B==null && A!=null) return { score: clampScore(A - 15), label: 'low confidence', details: { only: 'A' } };
+        const mu = (A + B)/2;
+        const delta = Math.abs(A - B);
+        const pen_div = 0.25 * delta;
+        let raw = mu - pen_div;
+        // Synchrony trend bonus
+        const sgn = x => (x>0?1:(x<0?-1:0));
+        const sgnSA = sgn(a.sSlope), sgnSB = sgn(b.sSlope);
+        const sgnHA = sgn(a.hSlope), sgnHB = sgn(b.hSlope);
+        const bonus = (sgnSA === sgnSB && sgnHA === sgnHB) ? 3 : 0;
+        const score = clampScore(raw + bonus);
+        return { score, label: null, details: { mu, delta, pen_div, bonus } };
+      }
+
+      function clampScore(x){ return Math.max(0, Math.min(100, x)); }
+
+      function bandLabel(x){
+        if (!Number.isFinite(x)) return '';
+        if (x >= 80) return 'Excellent';
+        if (x >= 60) return 'Good';
+        if (x >= 40) return 'Fair';
+        return 'Low';
+      }
+
+      function getBandColor(x){
+        if (!Number.isFinite(x)) return '#9aa5c6';
+        if (x >= 80) return '#4CAF50'; // Green for Excellent
+        if (x >= 60) return '#ffcc66'; // Yellow for Good
+        if (x >= 40) return '#ff9500'; // Orange for Fair
+        return '#ff6b6b'; // Red for Low
+      }
+
+      function labelScore(x){
+        if (!Number.isFinite(x)) return '--';
+        const lbl = bandLabel(x);
+        const color = getBandColor(x);
+        return `<span style="color:${color}">${Math.round(x)} (${lbl})</span>`;
+      }
+
+      function renderCoupleSummary(a,b){
+        let host = document.getElementById('coupleWellness');
+        if (!host){
+          const container = document.createElement('div');
+          container.id = 'coupleWellness';
+          container.style.marginTop = '16px';
+          container.style.background = '#1a2349';
+          container.style.borderRadius = '12px';
+          container.style.padding = '20px';
+          container.style.textAlign = 'center';
+          const parent = document.getElementById('spousalSignalsView');
+          parent.appendChild(container);
+          host = container;
+        }
+        const agg = coupleAggregate(a,b);
+        if (!agg){ 
+          host.innerHTML = `
+            <div id="coupleWellnessValue" style="font-size:28px;font-weight:bold;color:#9aa5c6;margin:10px 0;">--</div>
+            <div style="font-size:12px;color:#9aa5c6;">Couple Wellness</div>
+          `;
+          return; 
+        }
+        const lbl = bandLabel(agg.score);
+        const color = getBandColor(agg.score);
+        const mobileLike = isMobileLikeViewport();
+        const conf = agg.label ? (mobileLike ? ` ${agg.label}` : ` <span class="conf-dot">&#8226;</span> ${agg.label}`) : '';
+        host.innerHTML = `
+          <div id="coupleWellnessValue" style="font-size:28px;font-weight:bold;color:${color};margin:10px 0;">${Math.round(agg.score)} (${lbl})</div>
+          <div style="font-size:12px;color:#9aa5c6;">Couple Wellness${conf}</div>
+        `;
+        enforceConfDotVisibility();
+       }
+
+       // Helper functions from script.js for Joint Burnout calculation
+       function _mean2(arr){
+         return arr.length ? arr.reduce((s,v)=>s+v,0)/arr.length : NaN;
+       }
+
+       function stdev(arr) {
+         const a = arr.filter(x => Number.isFinite(x));
+         if (a.length < 2) return NaN;
+         const mean = _mean2(a);
+         const variance = a.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0) / a.length;
+         return Math.sqrt(variance);
+       }
+
+       function winsorize(arr, p=0.01){
+         const a = arr.slice().sort((x,y)=>x-y);
+         const lo = a[Math.floor(p*a.length)];
+         const hi = a[Math.floor((1-p)*a.length)-1];
+         return arr.map(v => Math.min(hi, Math.max(lo, v)));
+       }
+
+       function lastNDays(arr, n){ 
+         return arr.slice(-n); 
+       }
+
+       // RHR Elevation Check - exact logic from script.js lines 2806-2825
+       function rhrElevated(userRhr){
+         try{
+           const series = userRhr.slice().sort((a,b)=>String(a.dateISO).localeCompare(String(b.dateISO)));
+           if(series.length < 14) return false; // need baseline + recent
+           const baselinePool = series.slice(0, Math.max(0, series.length - 7));
+           const baselineValsRaw = baselinePool.map(r=>r.rhr).filter(Number.isFinite);
+           if(baselineValsRaw.length < 30) return false; // insufficient baseline
+           const baselineVals = winsorize(baselineValsRaw, 0.01);
+           const mu = _mean2(baselineVals);
+           const sd = stdev(baselineVals);
+           const recent7 = series.slice(-7).map(r=>r.rhr).filter(Number.isFinite);
+           if(recent7.length < 5) return false;
+           const recentMean = _mean2(recent7);
+           const threshold = mu + Math.max(3, 1.0 * (Number.isFinite(sd)? sd : 0));
+           // stability: at least 2 of last 3 days elevated
+           const last3 = series.slice(-3).map(r=>r.rhr).filter(Number.isFinite);
+           const elevatedDays = last3.filter(v => v >= threshold).length;
+           return (recentMean >= threshold) && (elevatedDays >= 2);
+         }catch(_){ return false }
+       }
+
+       // Joint Burnout Risk Card - Full Implementation
+       function renderJointBurnoutCard(result1, result2) {
+         let host = document.getElementById('jointBurnoutCard');
+         if (!host) {
+           const container = document.createElement('div');
+           container.id = 'jointBurnoutCard';
+           container.style.marginTop = '16px';
+           container.style.background = '#1a2349';
+           container.style.borderRadius = '12px';
+           container.style.padding = '20px';
+           container.style.textAlign = 'center';
+           const parent = document.getElementById('spousalSignalsView');
+           parent.appendChild(container);
+           host = container;
+         }
+
+         // If either profile is missing, show placeholder
+         if (!result1 || !result2) {
+           host.innerHTML = `
+             <div id="jointBurnoutValue" style="font-size:28px;font-weight:bold;color:#9aa5c6;margin:10px 0;">--</div>
+             <div style="font-size:12px;color:#9aa5c6;">Joint Burnout Risk</div>
+             <div style="font-size:10px;color:#9aa5c6;margin-top:8px;font-style:italic;">Insufficient data</div>
+           `;
+           return;
+         }
+
+         try {
+           // Extract last 7 days data (matching script.js lines 2798-2803)
+           const days = 7;
+           const aS = lastNDays(Object.values(result1.sleepDaily).filter(Number.isFinite), days);
+           const bS = lastNDays(Object.values(result2.sleepDaily).filter(Number.isFinite), days);
+           const aR = result1.rhrRows || [];
+           const bR = result2.rhrRows || [];
+           const aP = lastNDays((result1.stepsRows || []).map(r=>r.steps).filter(Number.isFinite), days);
+           const bP = lastNDays((result2.stepsRows || []).map(r=>r.steps).filter(Number.isFinite), days);
+           
+           // Calculate risk flags (matching script.js lines 2826-2830)
+           const aRhrElev = rhrElevated(aR);
+           const bRhrElev = rhrElevated(bR);
+           const aRisk = (_mean2(aS)<75?1:0) + (aRhrElev?1:0) + (_mean2(aP)<6000?1:0);
+           const bRisk = (_mean2(bS)<75?1:0) + (bRhrElev?1:0) + (_mean2(bP)<6000?1:0);
+           const totalRisk = aRisk + bRisk;
+           
+           // Check if we have sufficient data to calculate risk
+           const hasEnoughData = aS.length >= 3 && bS.length >= 3 && aP.length >= 3 && bP.length >= 3;
+           
+           if (!hasEnoughData) {
+             // Not enough data - show placeholder
+             host.innerHTML = `
+               <div id="jointBurnoutValue" style="font-size:28px;font-weight:bold;color:#9aa5c6;margin:10px 0;">--</div>
+               <div style="font-size:12px;color:#9aa5c6;">Joint Burnout Risk</div>
+               <div style="font-size:10px;color:#9aa5c6;margin-top:8px;font-style:italic;">Insufficient data for analysis</div>
+             `;
+             return;
+           }
+           
+           // Determine risk level and text (matching script.js lines 2831-2833)
+           let riskLevel = 'Low';
+           let burnoutText = 'Risk low and stable';
+           let riskColor = '#4CAF50'; // Green
+           
+           if(totalRisk>=4) {
+             riskLevel = 'High';
+             burnoutText = 'Family fatigue risk rising this week';
+             riskColor = '#ff6b6b'; // Red
+           } else if(totalRisk>=2) {
+             riskLevel = 'Moderate';
+             burnoutText = 'Elevated shared fatigue signals - consider lighter days';
+             riskColor = '#ffc107'; // Yellow
+           }
+           
+           // Update card
+           host.innerHTML = `
+             <div id="jointBurnoutValue" style="font-size:28px;font-weight:bold;color:${riskColor};margin:10px 0;">${riskLevel}</div>
+             <div style="font-size:12px;color:#9aa5c6;">Joint Burnout Risk</div>
+             <div style="font-size:10px;color:#9aa5c6;margin-top:8px;font-style:italic;">${burnoutText}</div>
+           `;
+           
+         } catch (error) {
+           // Fallback on error
+           host.innerHTML = `
+             <div id="jointBurnoutValue" style="font-size:28px;font-weight:bold;color:#9aa5c6;margin:10px 0;">--</div>
+             <div style="font-size:12px;color:#9aa5c6;">Joint Burnout Risk</div>
+             <div style="font-size:10px;color:#9aa5c6;margin-top:8px;font-style:italic;">Unable to calculate</div>
+           `;
+         }
+       }
+
+     // Global avatar management functions
+     function changeAvatar(profileId) {
+       const fileInput = document.getElementById(profileId + 'FileInput');
+       fileInput.click();
+     }
+
+     function handleAvatarUpload(profileId, fileInput) {
+       const file = fileInput.files[0];
+       if (!file) return;
+
+       // Validate file type
+       if (!file.type.startsWith('image/')) {
+         alert('Please select a valid image file.');
+         return;
+       }
+
+       // Validate file size (max 5MB)
+       if (file.size > 5 * 1024 * 1024) {
+         alert('Image file is too large. Please select an image smaller than 5MB.');
+         return;
+       }
+
+       // Create FileReader to preview the image
+       const reader = new FileReader();
+        reader.onload = async function(e) {
+         // Map profile names to profile IDs for avatar elements
+         let profileIdForAvatar = profileId;
+         let storageKey = profileId + '_avatar';
+         
+         if (profileId === 'ammar') {
+           profileIdForAvatar = 'profile1';
+           storageKey = 'profile1_avatar';
+         } else if (profileId === 'nour') {
+           profileIdForAvatar = 'profile2';
+           storageKey = 'profile2_avatar';
+         }
+         
+         // Update avatar in About modal if it exists
+         const avatarImg = document.getElementById(profileIdForAvatar + 'Avatar');
+         if (avatarImg) {
+           avatarImg.src = e.target.result;
+         }
+         
+         // Also update the main display images
+         if (profileIdForAvatar === 'profile1') {
+           const husbandImg = document.getElementById('husbandImage');
+           if (husbandImg) husbandImg.src = e.target.result;
+         } else if (profileIdForAvatar === 'profile2') {
+           const wifeImg = document.getElementById('wifeImage');
+           if (wifeImg) wifeImg.src = e.target.result;
+         }
+         
+         // Store the custom avatar in localStorage
+         localStorage.setItem(storageKey, e.target.result);
+         
+         // Also save to server for persistence across devices
+         try {
+           const response = await fetch('/api/save-avatar', {
+             method: 'POST',
+             headers: {
+               'Content-Type': 'application/json',
+             },
+             body: JSON.stringify({
+               profileName: profileIdForAvatar,
+               avatarData: e.target.result
+             })
+           });
+           
+           if (!response.ok) {
+             console.warn('Failed to save avatar to server, but local storage updated');
+           }
+         } catch (error) {
+           console.warn('Error saving avatar to server:', error);
+         }
+         
+         // Update the avatar in the Manage Profiles modal
+         const manageProfilesImg = document.querySelector(`img[onclick="changeAvatar('${profileId}')"]`);
+         if (manageProfilesImg) {
+           manageProfilesImg.src = e.target.result;
+           manageProfilesImg.style.borderColor = '#4CAF50';
+           setTimeout(() => {
+             manageProfilesImg.style.borderColor = 'transparent';
+           }, 1000);
+         }
+         
+         // Add visual feedback to About modal avatar if it exists
+         if (avatarImg) {
+           avatarImg.style.borderColor = '#4CAF50';
+           setTimeout(() => {
+             avatarImg.style.borderColor = 'transparent';
+           }, 1000);
+         }
+       };
+       reader.readAsDataURL(file);
+     }
+
+     async function loadCustomAvatars() {
+       // Load custom avatars from server first, then fall back to localStorage
+       try {
+         const [profile1Response, profile2Response] = await Promise.all([
+           fetch('/api/get-avatar/profile1'),
+           fetch('/api/get-avatar/profile2')
+         ]);
+         
+         // Load profile1 avatar
+         if (profile1Response.ok) {
+           const profile1Data = await profile1Response.json();
+           if (profile1Data.avatar) {
+             document.getElementById('profile1Avatar').src = profile1Data.avatar;
+             const husbandImg = document.getElementById('husbandImage');
+             if (husbandImg) husbandImg.src = profile1Data.avatar;
+             // Update localStorage with server data
+             localStorage.setItem('profile1_avatar', profile1Data.avatar);
+           }
+         } else {
+           // Fallback to localStorage
+           const profile1Avatar = localStorage.getItem('profile1_avatar');
+           if (profile1Avatar) {
+             document.getElementById('profile1Avatar').src = profile1Avatar;
+             const husbandImg = document.getElementById('husbandImage');
+             if (husbandImg) husbandImg.src = profile1Avatar;
+           }
+         }
+         
+         // Load profile2 avatar
+         if (profile2Response.ok) {
+           const profile2Data = await profile2Response.json();
+           if (profile2Data.avatar) {
+             document.getElementById('profile2Avatar').src = profile2Data.avatar;
+             const wifeImg = document.getElementById('wifeImage');
+             if (wifeImg) wifeImg.src = profile2Data.avatar;
+             // Update localStorage with server data
+             localStorage.setItem('profile2_avatar', profile2Data.avatar);
+           }
+         } else {
+           // Fallback to localStorage
+           const profile2Avatar = localStorage.getItem('profile2_avatar');
+           if (profile2Avatar) {
+             document.getElementById('profile2Avatar').src = profile2Avatar;
+             const wifeImg = document.getElementById('wifeImage');
+             if (wifeImg) wifeImg.src = profile2Avatar;
+           }
+         }
+       } catch (error) {
+         console.warn('Error loading avatars from server, using localStorage:', error);
+         // Fallback to localStorage only
+         const profile1Avatar = localStorage.getItem('profile1_avatar');
+         const profile2Avatar = localStorage.getItem('profile2_avatar');
+         
+         if (profile1Avatar) {
+           document.getElementById('profile1Avatar').src = profile1Avatar;
+           const husbandImg = document.getElementById('husbandImage');
+           if (husbandImg) husbandImg.src = profile1Avatar;
+         }
+         
+         if (profile2Avatar) {
+           document.getElementById('profile2Avatar').src = profile2Avatar;
+           const wifeImg = document.getElementById('wifeImage');
+           if (wifeImg) wifeImg.src = profile2Avatar;
+         }
+       }
+     }
+
+     function resetAvatar(profileId) {
+       // Reset to default avatar
+       const defaultAvatar = profileId === 'profile1' ? 'assets/husband.png' : 'assets/wife.png';
+       document.getElementById(profileId + 'Avatar').src = defaultAvatar;
+       
+       // Also reset the main display images
+       if (profileId === 'profile1') {
+         const husbandImg = document.getElementById('husbandImage');
+         if (husbandImg) husbandImg.src = defaultAvatar;
+       } else if (profileId === 'profile2') {
+         const wifeImg = document.getElementById('wifeImage');
+         if (wifeImg) wifeImg.src = defaultAvatar;
+       }
+       
+       // Remove from localStorage
+       localStorage.removeItem(profileId + '_avatar');
+       
+       // Add visual feedback
+       const avatarImg = document.getElementById(profileId + 'Avatar');
+       avatarImg.style.borderColor = '#ff6b6b';
+       setTimeout(() => {
+         avatarImg.style.borderColor = 'transparent';
+       }, 1000);
+     }
+
+     // Helper: true if YYYY-MM-DD is today's date (local)
+     function isToday(ymd) {
+       if (!ymd || typeof ymd !== 'string' || ymd.indexOf('-') === -1) return false;
+       try {
+         const [y, m, d] = ymd.split('-').map(v => parseInt(v));
+         const given = new Date(y, m - 1, d);
+         given.setHours(0,0,0,0);
+         const today = new Date();
+         today.setHours(0,0,0,0);
+         return given.getTime() === today.getTime();
+       } catch (_) { return false; }
+     }
+
+     // Global function for updating data date
+     function updateDataDate(result1, result2) {
+       const dateElement = document.getElementById('dataDate');
+       if (!dateElement) return;
+       
+        // Get the date from the first available result
+        const dateStr = result1?.date || result2?.date;
+       
+       if (!dateStr) {
+         dateElement.textContent = '--';
+         return;
+       }
+       
+       // Format as "Thu 10/10/2025"
+       try {
+         // Parse YYYY-MM-DD directly to avoid timezone issues
+         const parts = dateStr.split('-');
+         const year = parseInt(parts[0]);
+         const month = parseInt(parts[1]);
+         const day = parseInt(parts[2]);
+         
+         // Create date in local timezone
+         const d = new Date(year, month - 1, day);
+          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const dayName = dayNames[d.getDay()];
+          const formattedDate = `${dayName} ${month}/${day}/${year}`;
+          
+          // Determine bullet color based on both users' data freshness
+          const date1 = result1?.date;
+          const date2 = result2?.date;
+          const user1UpToDate = date1 && isToday(date1);
+          const user2UpToDate = date2 && isToday(date2);
+          
+          let bulletColor = '#ff6b6b'; // Default red (both stale)
+          if (user1UpToDate && user2UpToDate) {
+            bulletColor = '#22c55e'; // Green (both up-to-date)
+          } else if (user1UpToDate || user2UpToDate) {
+            bulletColor = '#ff9500'; // Orange (one up-to-date)
+          }
+          
+          dateElement.innerHTML = `${formattedDate} <span style="color:${bulletColor};margin-left:4px;font-size:14px;font-style:normal;font-family:Arial,sans-serif;">•</span>`;
+       } catch (error) {
+         dateElement.textContent = '--';
+       }
+     }
+
+      // Global function for loading spousal HRV data
+      async function loadSpousalHRVData() {
+       try {
+         const { profileIds, labels } = getFirstTwoProfiles();
+         const profileTitles = document.querySelectorAll('#spousalSignalsView h3');
+         profileTitles[0].textContent = labels[0];
+         profileTitles[1].textContent = labels[1];
+
+         // Load data for each profile in parallel
+         const [p1, p2] = await Promise.all([
+           profileIds[0] ? loadProfileSeries(profileIds[0]) : Promise.resolve(null),
+           profileIds[1] ? loadProfileSeries(profileIds[1]) : Promise.resolve(null)
+         ]);
+
+         const result1 = p1 ? computeWellness(p1) : null;
+         const result2 = p2 ? computeWellness(p2) : null;
+
+          // Update per-person displays
+          const p1HRV = document.getElementById('profile1HRV');
+          const p2HRV = document.getElementById('profile2HRV');
+          const p1Sleep = document.getElementById('profile1Sleep');
+          const p2Sleep = document.getElementById('profile2Sleep');
+          const p1Well = document.getElementById('profile1Wellness');
+          const p2Well = document.getElementById('profile2Wellness');
+
+          if (result1) {
+            const hrvValue = Number.isFinite(result1.latestHRV) ? Math.round(result1.latestHRV) : '--';
+            const sleepValue = Number.isFinite(result1.latestSleep) ? Math.round(result1.latestSleep) : '--';
+            p1HRV.innerHTML = hrvValue + getTrendArrow(result1.hrvTrend);
+            p1Sleep.innerHTML = sleepValue + getTrendArrow(result1.sleepTrend);
+            p1Well.innerHTML = labelScore(result1.metaFinal);
+          } else {
+            p1HRV.textContent = '--';
+            p1Sleep.textContent = '--';
+            p1Well.textContent = '--';
+          }
+
+          if (result2) {
+            const hrvValue = Number.isFinite(result2.latestHRV) ? Math.round(result2.latestHRV) : '--';
+            const sleepValue = Number.isFinite(result2.latestSleep) ? Math.round(result2.latestSleep) : '--';
+            p2HRV.innerHTML = hrvValue + getTrendArrow(result2.hrvTrend);
+            p2Sleep.innerHTML = sleepValue + getTrendArrow(result2.sleepTrend);
+            p2Well.innerHTML = labelScore(result2.metaFinal);
+          } else {
+            p2HRV.textContent = '--';
+            p2Sleep.textContent = '--';
+            p2Well.textContent = '--';
+          }
+
+          // Couple aggregation display (create on first run if missing)
+          renderCoupleSummary(result1, result2);
+          
+          // Joint Burnout Risk card (placeholder)
+          renderJointBurnoutCard(p1, p2);
+          
+          // Update the data date display
+          updateDataDate(result1, result2);
+          // Update individual profile card dates (pass both results and raw series)
+          updatePerUserDates(result1, result2, p1, p2);
+        } catch (e) {
+          // Silent error handling
+        }
+      }
+
+      // Global function to update per-user dates in the two profile cards
+      function updatePerUserDates(result1, result2, series1, series2) {
+        // Profile date elements have been removed from HTML - no longer needed
+        return;
+      }
+     
+     // Spousal view - no switching, just load spousal data
+     document.addEventListener('DOMContentLoaded', function() {
+       // Load custom avatars on page load
+       loadCustomAvatars();
+       
+       const spousalView = document.getElementById('spousalSignalsView');
+       const fetchBtn = document.getElementById('fetchDataBtn');
+       
+       // Make sure view is visible
+       if (spousalView) spousalView.style.display = 'block';
+       
+        // Add ESC key handler to close modals
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            // Close hamburger dropdown if open
+            const hamburgerDropdown = document.getElementById('hamburgerDropdown');
+            if (hamburgerDropdown && hamburgerDropdown.style.display === 'block') {
+              hamburgerDropdown.style.display = 'none';
+              return;
+            }
+            
+            // Close modals in order of priority
+            const noProfileModal = document.getElementById('noProfileModal');
+            const aboutModal = document.getElementById('aboutModal');
+            const authorizeProfileModal = document.getElementById('authorizeProfileModal');
+            const authAckModal = document.getElementById('authAckModal');
+            const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+            
+            if (noProfileModal && noProfileModal.style.display === 'block') {
+              hideNoProfileModal();
+            } else if (aboutModal && aboutModal.classList.contains('active')) {
+              closeAboutModal();
+            } else if (authorizeProfileModal && authorizeProfileModal.style.display === 'block') {
+              hideAuthorizeProfileModal();
+            } else if (authAckModal && authAckModal.style.display === 'block') {
+              hideAuthAckModal();
+            } else if (confirmDeleteModal && confirmDeleteModal.style.display === 'block') {
+              hideConfirmDeleteModal();
+            }
+          }
+        });
+
+        // Add hamburger menu handler
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const hamburgerDropdown = document.getElementById('hamburgerDropdown');
+        
+        if (hamburgerBtn && hamburgerDropdown) {
+          // Toggle dropdown on hamburger button click
+          hamburgerBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isVisible = hamburgerDropdown.style.display === 'block';
+            hamburgerDropdown.style.display = isVisible ? 'none' : 'block';
+          });
+          
+          // Close dropdown when clicking outside
+          document.addEventListener('click', function(e) {
+            if (!hamburgerMenu.contains(e.target)) {
+              hamburgerDropdown.style.display = 'none';
+            }
+          });
+          
+          // Handle menu item clicks
+          const menuItems = document.querySelectorAll('.menu-item');
+          menuItems.forEach(item => {
+            item.addEventListener('click', function() {
+              const action = this.getAttribute('data-action');
+              hamburgerDropdown.style.display = 'none'; // Close dropdown
+              
+              if (action === 'manage-profiles') {
+                showNoProfileModal(true);
+              } else               if (action === 'about') {
+                showAboutModal();
+              }
+            });
+          });
+        }
+       
+       // Add fetch button handler for both profiles
+       if (fetchBtn) {
+          fetchBtn.addEventListener('click', async function() {
+            // Show terminal modal
+            showTerminalModal();
+            
+            fetchBtn.disabled = true;
+            fetchBtn.style.animation = 'spin 1s linear infinite';
+            fetchBtn.style.color = '#4a90e2';
+            
+            try {
+              // Fetch data for both ammar and nour
+              const [ammarResponse, nourResponse] = await Promise.all([
+                fetch('/api/fetch-data', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ profile: 'ammar' })
+                }),
+                fetch('/api/fetch-data', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ profile: 'nour' })
+                })
+              ]);
+              
+              const ammarResult = await ammarResponse.json();
+              const nourResult = await nourResponse.json();
+              
+              // Poll both jobs with terminal updates
+              await pollBothJobsWithTerminal(ammarResult.job_id, nourResult.job_id);
+              
+            } catch (error) {
+              addTerminalMessage(`Error: ${error.message}`, 'error');
+              fetchBtn.style.animation = 'none';
+              fetchBtn.style.color = '#ff6b6b';
+              fetchBtn.disabled = false;
+            }
+          });
+        
+        // Terminal modal functions
+        function showTerminalModal() {
+          const modal = document.getElementById('terminalModal');
+          const content = document.getElementById('terminalContent');
+          if (modal && content) {
+            modal.style.display = 'block';
+            content.innerHTML = '<div style="color:#00ff00;">Starting data fetch operation...</div><div style="color:#888;">Waiting for job to initialize...</div>';
+          }
+        }
+        
+        function hideTerminalModal() {
+          const modal = document.getElementById('terminalModal');
+          if (modal) {
+            modal.style.display = 'none';
+          }
+        }
+        
+        function addTerminalMessage(message, type = 'info') {
+          const content = document.getElementById('terminalContent');
+          if (content) {
+            const timestamp = new Date().toLocaleTimeString();
+            let color = '#00ff00'; // Default green
+            if (type === 'error') color = '#ff4444';
+            else if (type === 'warning') color = '#ffaa00';
+            else if (type === 'success') color = '#44ff44';
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.style.color = color;
+            messageDiv.textContent = `[${timestamp}] ${message}`;
+            content.appendChild(messageDiv);
+            content.scrollTop = content.scrollHeight;
+          }
+        }
+        
+        // Close terminal button handler
+        const closeTerminalBtn = document.getElementById('closeTerminalBtn');
+        if (closeTerminalBtn) {
+          closeTerminalBtn.addEventListener('click', hideTerminalModal);
+        }
+        
+        // Poll both job statuses with terminal updates
+        async function pollBothJobsWithTerminal(ammarJobId, nourJobId) {
+          let ammarDone = false;
+          let nourDone = false;
+          let lastOutputLength = { [ammarJobId]: 0, [nourJobId]: 0 };
+          
+          addTerminalMessage(`Started fetch jobs: Ammar (${ammarJobId}), Nour (${nourJobId})`, 'info');
+          
+          const checkStatus = async () => {
+            try {
+              const [ammarStatus, nourStatus] = await Promise.all([
+                !ammarDone ? fetch(`/api/fetch-status/${ammarJobId}`).then(r => r.json()) : Promise.resolve({ status: 'completed' }),
+                !nourDone ? fetch(`/api/fetch-status/${nourJobId}`).then(r => r.json()) : Promise.resolve({ status: 'completed' })
+              ]);
+              
+              let hasErrors = false;
+              
+               if (!ammarDone) {
+                 // Display new raw output lines for Ammar
+                 if (ammarStatus.raw_output && ammarStatus.raw_output.length > lastOutputLength[ammarJobId]) {
+                   const newLines = ammarStatus.raw_output.slice(lastOutputLength[ammarJobId]);
+                   for (const line of newLines) {
+                     addTerminalMessage(`[Ammar] ${line}`, 'info');
+                   }
+                   lastOutputLength[ammarJobId] = ammarStatus.raw_output.length;
+                 }
+                 
+                 if (ammarStatus.status === 'completed') {
+                   ammarDone = true;
+                   addTerminalMessage('Ammar profile fetch completed successfully', 'success');
+                 } else if (ammarStatus.status === 'failed' || ammarStatus.status === 'error' || ammarStatus.status === 'timeout') {
+                   ammarDone = true;
+                   hasErrors = true;
+                   addTerminalMessage(`Ammar profile fetch failed: ${ammarStatus.error || ammarStatus.status}`, 'error');
+                 } else if (ammarStatus.status === 'running') {
+                   // Only show fallback messages if there's no raw output
+                   if (!ammarStatus.raw_output || ammarStatus.raw_output.length === 0) {
+                     if (ammarStatus.message) {
+                       addTerminalMessage(`[Ammar] ${ammarStatus.message}`, 'info');
+                     }
+                     if (ammarStatus.current_script) {
+                       addTerminalMessage(`[Ammar] Running: ${ammarStatus.current_script}`, 'info');
+                     }
+                   }
+                 }
+               }
+               
+               if (!nourDone) {
+                 // Display new raw output lines for Nour
+                 if (nourStatus.raw_output && nourStatus.raw_output.length > lastOutputLength[nourJobId]) {
+                   const newLines = nourStatus.raw_output.slice(lastOutputLength[nourJobId]);
+                   for (const line of newLines) {
+                     addTerminalMessage(`[Nour] ${line}`, 'info');
+                   }
+                   lastOutputLength[nourJobId] = nourStatus.raw_output.length;
+                 }
+                 
+                 if (nourStatus.status === 'completed') {
+                   nourDone = true;
+                   addTerminalMessage('Nour profile fetch completed successfully', 'success');
+                 } else if (nourStatus.status === 'failed' || nourStatus.status === 'error' || nourStatus.status === 'timeout') {
+                   nourDone = true;
+                   hasErrors = true;
+                   addTerminalMessage(`Nour profile fetch failed: ${nourStatus.error || nourStatus.status}`, 'error');
+                 } else if (nourStatus.status === 'running') {
+                   // Only show fallback messages if there's no raw output
+                   if (!nourStatus.raw_output || nourStatus.raw_output.length === 0) {
+                     if (nourStatus.message) {
+                       addTerminalMessage(`[Nour] ${nourStatus.message}`, 'info');
+                     }
+                     if (nourStatus.current_script) {
+                       addTerminalMessage(`[Nour] Running: ${nourStatus.current_script}`, 'info');
+                     }
+                   }
+                 }
+               }
+              
+              // If both done, reload data
+              if (ammarDone && nourDone) {
+                fetchBtn.style.animation = 'none';
+                
+                 if (hasErrors) {
+                   addTerminalMessage('Fetch completed with errors', 'error');
+                   // Show red X for errors
+                   fetchBtn.textContent = '✗';
+                   fetchBtn.style.color = '#ff6b6b';
+                   fetchBtn.disabled = false;
+                   
+                   // Change back to refresh icon after 3 seconds
+                   setTimeout(() => {
+                     fetchBtn.textContent = '↻';
+                     fetchBtn.style.color = '#9aa5c6';
+                   }, 3000);
+                 } else {
+                   addTerminalMessage('All profiles fetched successfully! Reloading data...', 'success');
+                   // Both successful
+                   // Reload the data
+                   await loadSpousalHRVData();
+                   
+                   // Show green checkmark
+                   fetchBtn.style.color = '#4CAF50';
+                   fetchBtn.textContent = '✓';
+                   fetchBtn.disabled = false;
+                   
+                   // Reschedule auto-refresh for 24 hours from now
+                   scheduleAutoRefresh();
+                   
+                   // Keep green checkmark for 30 seconds
+                   setTimeout(() => {
+                     fetchBtn.textContent = '↻';
+                     fetchBtn.style.color = '#9aa5c6';
+                   }, 30000);
+                 }
+                
+                // Terminal stays open - user can close manually
+                
+                return;
+              }
+              
+              // Otherwise, poll again in 2 seconds
+              setTimeout(checkStatus, 1000); // Poll every 1 second for more real-time updates
+              
+             } catch (error) {
+               addTerminalMessage(`Polling error: ${error.message}`, 'error');
+               fetchBtn.style.animation = 'none';
+               fetchBtn.style.color = '#ff6b6b';
+               fetchBtn.textContent = '↻';
+               fetchBtn.disabled = false;
+             }
+          };
+          
+          // Start polling
+          setTimeout(checkStatus, 2000);
+        }
+      }
+
+      
+      
+       // Load spousal data immediately
+       loadSpousalHRVData();
+       
+       // Auto-refresh every 24 hours
+       let autoRefreshTimer = null;
+       
+       function scheduleAutoRefresh() {
+         // Clear any existing timer
+         if (autoRefreshTimer) {
+           clearTimeout(autoRefreshTimer);
+         }
+         
+          // Schedule fetch for 24 hours from now
+          const twentyFourHours = 24 * 60 * 60 * 1000;
+          autoRefreshTimer = setTimeout(() => {
+            if (fetchBtn && !fetchBtn.disabled) {
+              fetchBtn.click();
+            }
+          }, twentyFourHours);
+       }
+       
+       // Start the auto-refresh timer
+       scheduleAutoRefresh();
+       
+       // Fullscreen toggle on logo click
+       const logo = document.getElementById('spousalLogo');
+       if (logo) {
+         logo.style.cursor = 'pointer';
+          logo.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+              // Enter fullscreen
+              document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+              // Exit fullscreen
+              document.exitFullscreen().catch(() => {});
+            }
+          });
+       }
+       
+
+      });
+      
+      // Profile Management Functions (copied from script.js)
+     const noProfileModal = document.getElementById('noProfileModal');
+     const noProfileCloseBtn = document.getElementById('noProfileModalClose');
+     const createProfileForm = document.getElementById('createProfileForm');
+     const profileCreationForm = document.getElementById('profileCreationForm');
+     const profileCreatedSuccess = document.getElementById('profileCreatedSuccess');
+     const profileCreationStatus = document.getElementById('profileCreationStatus');
+     const authorizeBtn = document.getElementById('authorizeBtn');
+     const authorizationStatus = document.getElementById('authorizationStatus');
+     
+     // Tab elements
+     const tabBtns = document.querySelectorAll('.tab-btn');
+     const tabContents = document.querySelectorAll('.tab-content');
+     const newProfileTab = document.getElementById('newProfileTab');
+     const existingProfilesTab = document.getElementById('existingProfilesTab');
+     const profilesList = document.getElementById('profilesList');
+     const profilesLoading = document.getElementById('profilesLoading');
+     const profileDeletionStatus = document.getElementById('profileDeletionStatus');
+     
+     // Function to reset profile creation form
+     function resetProfileCreationForm() {
+       // Hide success message and show form
+       if (profileCreatedSuccess) profileCreatedSuccess.style.display = 'none';
+       if (profileCreationForm) profileCreationForm.style.display = 'block';
+       
+       // Clear form fields
+       const profileNameField = document.getElementById('profileName');
+       const clientIdField = document.getElementById('clientId');
+       const clientSecretField = document.getElementById('clientSecret');
+       if (profileNameField) profileNameField.value = '';
+       if (clientIdField) clientIdField.value = '';
+       if (clientSecretField) clientSecretField.value = '';
+       
+       // Reset status messages
+       if (profileCreationStatus) {
+         profileCreationStatus.textContent = '';
+         profileCreationStatus.className = 'status-message';
+       }
+       if (authorizationStatus) {
+         authorizationStatus.textContent = '';
+         authorizationStatus.className = 'status-message';
+       }
+       
+       // Reset button states
+       const createBtn = document.getElementById('createProfileBtn');
+       if (createBtn) {
+         createBtn.disabled = false;
+         createBtn.textContent = 'Create Profile';
+         createBtn.style.opacity = '1';
+         createBtn.style.cursor = 'pointer';
+       }
+       
+       // Clear stored profile name
+       window.createdProfileName = null;
+     }
+     
+     // Function to show no-profile modal
+     window.showNoProfileModal = function(hasExistingProfiles = false) {
+       if (noProfileModal) {
+         noProfileModal.classList.add('active');
+         document.body.style.overflow = 'hidden';
+         
+         // Reset the profile creation form
+         resetProfileCreationForm();
+         
+         // Show/hide close button based on whether profiles exist
+         const closeBtn = document.getElementById('noProfileModalClose');
+         if (closeBtn) {
+           closeBtn.style.display = hasExistingProfiles ? 'block' : 'none';
+         }
+         
+         // Store the state for ESC key handling
+         noProfileModal.dataset.hasExistingProfiles = hasExistingProfiles.toString();
+         
+         // Load profiles to update the profile limit message
+         loadExistingProfiles().then(() => {
+           // Check if 2 profiles exist and auto-select existing profiles tab
+           fetch('/api/profiles')
+             .then(response => response.json())
+             .then(profiles => {
+               if (profiles.length >= 2) {
+                 // Switch to existing profiles tab
+                 const existingTabBtn = document.querySelector('[data-tab="existing-profiles"]');
+                 const existingTabContent = document.getElementById('existingProfilesTab');
+                 const newTabBtn = document.querySelector('[data-tab="new-profile"]');
+                 const newTabContent = document.getElementById('newProfileTab');
+                 
+                 if (existingTabBtn && existingTabContent && newTabBtn && newTabContent) {
+                   // Remove active class from new profile tab
+                   newTabBtn.classList.remove('active');
+                   newTabContent.classList.remove('active');
+                   
+                   // Add active class to existing profiles tab
+                   existingTabBtn.classList.add('active');
+                   existingTabContent.classList.add('active');
+                 }
+               }
+             })
+             .catch(error => console.error('Error checking profiles:', error));
+         });
+       }
+     };
+     
+     // Function to hide no-profile modal
+     function hideNoProfileModal() {
+       if (noProfileModal) {
+         noProfileModal.classList.remove('active');
+         document.body.style.overflow = '';
+       }
+     }
+     
+     // Close button event listener
+     if (noProfileCloseBtn) {
+       noProfileCloseBtn.addEventListener('click', hideNoProfileModal);
+     }
+     
+     // Tab switching functionality
+     tabBtns.forEach(btn => {
+       btn.addEventListener('click', function() {
+         const targetTab = this.getAttribute('data-tab');
+         
+         // Remove active class from all tabs and buttons
+         tabBtns.forEach(b => b.classList.remove('active'));
+         tabContents.forEach(c => c.classList.remove('active'));
+         
+         // Add active class to clicked button
+         this.classList.add('active');
+         
+         // Show corresponding tab content
+         if (targetTab === 'new-profile') {
+           newProfileTab.classList.add('active');
+         } else if (targetTab === 'existing-profiles') {
+           existingProfilesTab.classList.add('active');
+           loadExistingProfiles();
+         }
+       });
+     });
+     
+     // Load existing profiles
+     async function loadExistingProfiles() {
+       if (!profilesList) return;
+       
+       profilesLoading.style.display = 'block';
+       profilesList.innerHTML = '';
+       profilesList.appendChild(profilesLoading);
+       
+       try {
+         const response = await fetch('/api/profiles');
+         const profiles = await response.json();
+         
+         profilesLoading.style.display = 'none';
+         
+         // Update profile limit message and form fields in New Profile tab
+         const profileLimitMessage = document.getElementById('profileLimitMessage');
+         const createProfileForm = document.getElementById('createProfileForm');
+         const profileNameField = document.getElementById('profileName');
+         const clientIdField = document.getElementById('clientId');
+         const clientSecretField = document.getElementById('clientSecret');
+         const createProfileBtn = document.getElementById('createProfileBtn');
+         
+         // Define shakeMessage function outside the if/else blocks
+         const shakeMessage = () => {
+           if (profileLimitMessage) {
+             profileLimitMessage.classList.remove('shake');
+             // Force reflow
+             profileLimitMessage.offsetHeight;
+             profileLimitMessage.classList.add('shake');
+           }
+         };
+         
+         if (profiles.length >= 2) {
+           // Show limit message and disable only the submit button
+           if (profileLimitMessage) profileLimitMessage.style.display = 'block';
+           if (createProfileBtn) {
+             createProfileBtn.disabled = true;
+             createProfileBtn.textContent = 'Profile Limit Reached';
+             createProfileBtn.style.opacity = '0.5';
+             createProfileBtn.style.cursor = 'not-allowed';
+           }
+           
+           // Add click events to fields to trigger shake
+           if (profileNameField) {
+             profileNameField.addEventListener('click', shakeMessage);
+           }
+           if (clientIdField) {
+             clientIdField.addEventListener('click', shakeMessage);
+           }
+           if (clientSecretField) {
+             clientSecretField.addEventListener('click', shakeMessage);
+           }
+         } else {
+           // Hide limit message and enable form
+           if (profileLimitMessage) profileLimitMessage.style.display = 'none';
+           if (createProfileBtn) {
+             createProfileBtn.disabled = false;
+             createProfileBtn.textContent = 'Create Profile';
+             createProfileBtn.style.opacity = '1';
+             createProfileBtn.style.cursor = 'pointer';
+           }
+           
+           // Remove shake event listeners
+           if (profileNameField) {
+             profileNameField.removeEventListener('click', shakeMessage);
+           }
+           if (clientIdField) {
+             clientIdField.removeEventListener('click', shakeMessage);
+           }
+           if (clientSecretField) {
+             clientSecretField.removeEventListener('click', shakeMessage);
+           }
+         }
+         
+         if (profiles.length === 0) {
+           profilesList.innerHTML = '<div class="status-message info">No profiles found. Create a new profile to get started.</div>';
+           return;
+         }
+         
+         profilesList.innerHTML = '';
+         profiles.forEach(profile => {
+           // Handle both old format (string) and new format (object)
+           const profileName = typeof profile === 'string' ? profile : profile.name;
+           const profileCreated = typeof profile === 'string' ? 'Unknown' : profile.created;
+           
+           // Get stored avatar or use default based on profile name
+           let avatarSrc = 'assets/husband.png'; // default
+           
+           // Map profile names to avatar storage keys
+           let avatarKey = null;
+           if (profileName === 'ammar' || profileName === 'profile1') {
+             avatarKey = 'profile1_avatar';
+             avatarSrc = 'assets/husband.png'; // default for profile1
+           } else if (profileName === 'nour' || profileName === 'profile2') {
+             avatarKey = 'profile2_avatar';
+             avatarSrc = 'assets/wife.png'; // default for profile2
+           }
+           
+           // Check for stored custom avatar
+           if (avatarKey) {
+             const storedAvatar = localStorage.getItem(avatarKey);
+             if (storedAvatar) {
+               avatarSrc = storedAvatar;
+             }
+           }
+           
+           const profileItem = document.createElement('div');
+           profileItem.className = 'profile-item';
+           profileItem.innerHTML = `
+             <div class="profile-info" style="display:flex;align-items:center;gap:12px;">
+               <img src="${avatarSrc}" alt="${profileName}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:border-color 0.2s ease;" title="Click to change avatar" onclick="changeAvatar('${profileName}')">
+               <input type="file" id="${profileName}FileInput" accept="image/*" style="display:none;" onchange="handleAvatarUpload('${profileName}', this)">
+               <div>
+                 <div class="profile-name">${profileName}</div>
+                 <div class="profile-details">${profileCreated}</div>
+               </div>
+             </div>
+             <div class="profile-actions">
+               <button class="btn-secondary" onclick="authorizeExistingProfile('${profileName}')" id="auth-${profileName}">Auth</button>
+               <button class="btn-danger" onclick="deleteProfile('${profileName}')" id="delete-${profileName}">
+                 Delete
+               </button>
+             </div>
+             <div id="auth-status-${profileName}" class="status-message" style="display:none;"></div>
+           `;
+           profilesList.appendChild(profileItem);
+         });
+       } catch (error) {
+         console.error('Error loading profiles:', error);
+         profilesLoading.style.display = 'none';
+         profilesList.innerHTML = '<div class="status-message error">Failed to load profiles. Please try again.</div>';
+       }
+     }
+     
+     // Authorization modal helpers
+     function openAuthorizeProfileModal(profileName, intro) {
+       const m = document.getElementById('authorizeProfileModal');
+       const title = document.getElementById('authorizeProfileTitle');
+       const introEl = document.getElementById('authorizeProfileIntro');
+       const content = document.getElementById('authorizeProfileContent');
+       const status = document.getElementById('authorizeProfileStatus');
+       if (title) title.textContent = `Authorize ${profileName}`;
+       if (introEl) { introEl.textContent = intro || ''; introEl.style.display = intro ? 'block' : 'none'; }
+       if (content) content.innerHTML = '';
+       if (status) { status.textContent = ''; status.style.display = 'none'; status.className = 'status-message'; }
+       if (m) m.classList.add('active');
+     }
+     
+     function closeAuthorizeProfileModal(){ 
+       const m = document.getElementById('authorizeProfileModal'); 
+       if (m) m.classList.remove('active'); 
+     }
+     
+     // Close button for authorize modal
+     const authorizeProfileModalClose = document.getElementById('authorizeProfileModalClose');
+     if (authorizeProfileModalClose) {
+       authorizeProfileModalClose.addEventListener('click', closeAuthorizeProfileModal);
+     }
+     
+     // Authorization acknowledgement popup (returns Promise<boolean>)
+     function showAuthAcknowledgement(){
+       return new Promise((resolve) => {
+         const modal = document.getElementById('authAckModal');
+         const okBtn = document.getElementById('authAckOkBtn');
+         const closeBtn = document.getElementById('authAckClose');
+         if (!modal || !okBtn){ resolve(true); return; }
+         function cleanup(){
+           if (okBtn) okBtn.removeEventListener('click', onOk);
+           if (closeBtn) closeBtn.removeEventListener('click', onClose);
+           modal.removeEventListener('click', onBackdrop);
+         }
+         function onOk(){ cleanup(); modal.classList.remove('active'); resolve(true); }
+         function onClose(){ cleanup(); modal.classList.remove('active'); resolve(false); }
+         function onBackdrop(e){ if (e.target === modal){ onClose(); } }
+         okBtn.addEventListener('click', onOk);
+         if (closeBtn) closeBtn.addEventListener('click', onClose);
+         modal.addEventListener('click', onBackdrop);
+         modal.classList.add('active');
+       });
+     }
+     
+     // Authorization for existing profiles (opens dedicated modal)
+     window.authorizeExistingProfile = async function(profileName){
+       try{
+         const existingModal = document.getElementById('noProfileModal');
+         if (existingModal) existingModal.classList.remove('active');
+         // Require acknowledgement before proceeding
+         const ok = await showAuthAcknowledgement();
+         if (!ok){ if (existingModal) existingModal.classList.add('active'); return; }
+         openAuthorizeProfileModal(profileName);
+
+         const authBtn = document.getElementById(`auth-${profileName}`);
+         if (authBtn) { authBtn.disabled = true; authBtn.textContent = 'Starting...'; }
+
+         const content = document.getElementById('authorizeProfileContent');
+         const status = document.getElementById('authorizeProfileStatus');
+         if (status) { status.style.display = 'block'; status.className = 'status-message info'; status.textContent = 'Checking authorization mode...'; }
+
+         // Determine mode and authorization URL
+         const modeResp = await fetch(`/api/authorize/${profileName}`, { method: 'GET' });
+         const mode = await modeResp.json();
+         if (!modeResp.ok){
+           if (status) { status.textContent = mode.error || 'Failed to start authorization'; status.className = 'status-message error'; }
+           if (authBtn) { authBtn.disabled = false; authBtn.textContent = 'Auth'; }
+           return;
+         }
+
+         if (mode.mode === 'manual'){
+           // Open URL and present paste UI in the new modal
+           const url = mode.auth_url || mode.authUrl;
+           if (url) window.open(url, '_blank');
+           if (status) { status.textContent = ''; status.className = 'status-message'; status.style.display = 'none'; }
+           if (content){
+             content.innerHTML = `
+               <div class="form-group">
+                 <label for="authorizeProfilePaste">Paste redirected URL (or code):</label>
+                 <input type="text" id="authorizeProfilePaste" placeholder="Paste the full https://localhost:... URL or the code value" style="width:100%;box-sizing:border-box" />
+               </div>
+               <div class="form-actions" style="margin-top:8px">
+                 <button class="btn-primary" id="authorizeProfileSubmit">Submit</button>
+               </div>
+             `;
+             const submitBtn = document.getElementById('authorizeProfileSubmit');
+             if (submitBtn){
+               submitBtn.addEventListener('click', async () => {
+                 const pasted = (document.getElementById('authorizeProfilePaste').value || '').trim();
+                 if (!pasted) {
+                   if (status) { status.textContent = 'Please paste the redirected URL or code.'; status.className = 'status-message error'; status.style.display = 'block'; }
+                   return;
+                 }
+                 submitBtn.disabled = true;
+                 submitBtn.textContent = 'Submitting...';
+                 try {
+                   const exResp = await fetch('/api/authorize-exchange', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ profileName, redirectUrl: pasted }) });
+                   const ex = await exResp.json();
+                   if (exResp.ok) { 
+                     try { sessionStorage.setItem('fitbaus:justAuthorized', profileName); } catch(_) {}
+                     if (status) { status.textContent = '✅ Authorization complete! You can close this dialog and fetch data.'; status.className = 'status-message success'; status.style.display = 'block'; }
+                     // Refresh profiles
+                     setTimeout(() => {
+                       loadAvailableProfiles();
+                       closeAuthorizeProfileModal();
+                     }, 1500);
+                   } else {
+                     if (status) { status.textContent = ex.error || 'Failed to exchange code.'; status.className = 'status-message error'; status.style.display = 'block'; }
+                   }
+                 } catch (e) {
+                   if (status) { status.textContent = 'Network error during exchange.'; status.className = 'status-message error'; status.style.display = 'block'; }
+                 } finally {
+                   submitBtn.disabled = false;
+                   submitBtn.textContent = 'Submit';
+                 }
+               });
+             }
+           }
+           if (authBtn) { authBtn.disabled = false; authBtn.textContent = 'Auth'; }
+           return;
+         }
+
+         // Background mode: start job
+         if (status) { status.textContent = 'Starting authorization... A browser window may open.'; }
+         const startResp = await fetch(`/api/authorize/${profileName}`, { method: 'POST' });
+         const startResult = await startResp.json();
+         if (!startResp.ok) {
+           if (status) { status.textContent = startResult.error || 'Failed to start authorization'; status.className = 'status-message error'; }
+           if (authBtn) { authBtn.disabled = false; authBtn.textContent = 'Auth'; }
+           return;
+         }
+
+         const jobId = startResult.job_id;
+         if (status) { status.textContent = 'Authorization in progress...'; }
+
+         // Poll status until completion
+         const pollIntervalMs = 2000;
+         const timeoutMs = 15 * 60 * 1000; // 15 minutes
+         const startTime = Date.now();
+
+         async function poll() {
+           try {
+             const s = await fetch(`/api/authorize-status/${jobId}`);
+             const st = await s.json();
+             if (!s.ok) {
+               if (status) { status.textContent = st.error || 'Authorization status error'; status.className = 'status-message error'; }
+               if (authBtn) { authBtn.disabled = false; authBtn.textContent = 'Auth'; }
+               return;
+             }
+
+             if (st.status === 'completed') { 
+               try { sessionStorage.setItem('fitbaus:justAuthorized', profileName); } catch(_) {}
+               if (status) { status.textContent = '✅ Authorization complete! You can close this dialog and fetch data.'; status.className = 'status-message success'; }
+               // Refresh profiles
+               setTimeout(() => {
+                 loadAvailableProfiles();
+                 closeAuthorizeProfileModal();
+               }, 1500);
+               if (authBtn) { authBtn.disabled = false; authBtn.textContent = 'Auth'; }
+               return;
+             }
+             if (st.status === 'failed' || st.status === 'error' || st.status === 'timeout') {
+               const err = st.error || 'Authorization failed.';
+               if (status) { status.textContent = `❌ ${err}`; status.className = 'status-message error'; }
+               if (authBtn) { authBtn.disabled = false; authBtn.textContent = 'Auth'; }
+               return;
+             }
+
+             if (Date.now() - startTime > timeoutMs) {
+               if (status) { status.textContent = 'Authorization timed out. Please try again.'; status.className = 'status-message error'; }
+               if (authBtn) { authBtn.disabled = false; authBtn.textContent = 'Auth'; }
+               return;
+             }
+
+             // Keep polling
+             setTimeout(poll, pollIntervalMs);
+           } catch (e) {
+             console.error('Polling error', e);
+             if (status) { status.textContent = 'Network error during authorization.'; status.className = 'status-message error'; }
+             if (authBtn) { authBtn.disabled = false; authBtn.textContent = 'Auth'; }
+           }
+         }
+         setTimeout(poll, pollIntervalMs);
+       } catch (e) {
+         console.error('Authorization error', e);
+         if (authBtn) { authBtn.disabled = false; authBtn.textContent = 'Auth'; }
+       }
+     };
+     
+     // Confirm delete modal flow
+     function openConfirmDeleteModal(profileName){
+       const modal = document.getElementById('confirmDeleteModal');
+       const title = document.getElementById('confirmDeleteTitle');
+       const body = document.getElementById('confirmDeleteBody');
+       const actions = document.getElementById('confirmDeleteActions');
+       const closeBtn = document.getElementById('confirmDeleteClose');
+       const cancelBtn = document.getElementById('confirmDeleteCancelBtn');
+       const proceedBtn = document.getElementById('confirmDeleteProceedBtn');
+       if (!modal) return;
+       if (title) title.textContent = `Delete ${profileName}`;
+       if (body) { body.className = 'status-message info'; body.style.display='block'; body.textContent = `Are you sure you want to delete profile "${profileName}"? This will remove their CSVs and tokens. This action cannot be undone.`; }
+       if (modal) modal.classList.add('active');
+
+       function close(){ modal.classList.remove('active'); }
+       if (closeBtn) { closeBtn.onclick = close; }
+       if (cancelBtn) { cancelBtn.onclick = close; }
+
+       function proceedDelete(){
+         (async ()=>{ await performDelete(profileName); close(); })();
+       }
+
+       if (proceedBtn){ proceedBtn.onclick = proceedDelete; }
+     }
+
+     async function performDelete(profileName){
+       const deleteBtn = document.getElementById(`delete-${profileName}`);
+       if (deleteBtn) { deleteBtn.disabled = true; deleteBtn.textContent = 'Deleting...'; }
+       profileDeletionStatus.textContent = 'Deleting profile...';
+       profileDeletionStatus.className = 'status-message info';
+       profileDeletionStatus.style.display = 'block';
+       try {
+         const response = await fetch('/api/delete-profile', { method: 'POST', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify({ profileName }) });
+         const result = await response.json();
+         if (response.ok) {
+           profileDeletionStatus.textContent = result.message;
+           profileDeletionStatus.className = 'status-message success';
+           setTimeout(() => {
+             loadExistingProfiles();
+             loadAvailableProfiles(); // Refresh main profile dropdowns
+             profileDeletionStatus.style.display = 'none';
+           }, 1500);
+         } else {
+           profileDeletionStatus.textContent = result.error || 'Failed to delete profile';
+           profileDeletionStatus.className = 'status-message error';
+         }
+       } catch (error) {
+         console.error('Error deleting profile:', error);
+         profileDeletionStatus.textContent = 'Network error. Please try again.';
+         profileDeletionStatus.className = 'status-message error';
+       } finally {
+         if (deleteBtn) { deleteBtn.disabled = false; deleteBtn.textContent = 'Delete'; }
+       }
+     }
+
+     // Delete profile function (opens custom modal)
+     window.deleteProfile = function(profileName){ openConfirmDeleteModal(profileName); };
+     
+     // Profile creation form handling
+     if (createProfileForm) {
+       createProfileForm.addEventListener('submit', async function(e) {
+         e.preventDefault();
+         
+         const profileName = document.getElementById('profileName').value.trim();
+         const clientId = document.getElementById('clientId').value.trim();
+         const clientSecret = document.getElementById('clientSecret').value.trim();
+         const createBtn = document.getElementById('createProfileBtn');
+         
+         // Disable form and show loading
+         createBtn.disabled = true;
+         createBtn.textContent = 'Creating...';
+         profileCreationStatus.textContent = 'Creating profile...';
+         profileCreationStatus.className = 'status-message info';
+         
+         try {
+           const response = await fetch('/api/create-profile', {
+             method: 'POST',
+             headers: {
+               'Content-Type': 'application/json',
+             },
+             body: JSON.stringify({
+               profileName: profileName,
+               clientId: clientId,
+               clientSecret: clientSecret
+             })
+           });
+           
+           const result = await response.json();
+           
+           if (response.ok) {
+             // Success - show success screen
+             profileCreationForm.style.display = 'none';
+             profileCreatedSuccess.style.display = 'block';
+             profileCreationStatus.textContent = '';
+             
+             // Store the created profile name for authorization
+             window.createdProfileName = profileName;
+           } else {
+             // Error
+             profileCreationStatus.textContent = result.error || 'Failed to create profile';
+             profileCreationStatus.className = 'status-message error';
+           }
+         } catch (error) {
+           console.error('Error creating profile:', error);
+           profileCreationStatus.textContent = 'Network error. Please try again.';
+           profileCreationStatus.className = 'status-message error';
+         } finally {
+           // Re-enable form
+           createBtn.disabled = false;
+           createBtn.textContent = 'Create Profile';
+         }
+       });
+     }
+     
+     // Authorization button handling (seamless flow: start backend job and poll)
+     if (authorizeBtn) {
+       authorizeBtn.addEventListener('click', async function() {
+         const profileName = window.createdProfileName;
+         if (!profileName) {
+           authorizationStatus.textContent = 'No profile selected';
+           authorizationStatus.className = 'status-message error';
+           return;
+         }
+
+         // Require acknowledgement before proceeding
+         const ok = await showAuthAcknowledgement();
+         if (!ok){ return; }
+
+         const authBtn = this;
+         authBtn.disabled = true;
+         authBtn.textContent = 'Starting...';
+         authorizationStatus.textContent = 'Checking authorization mode...';
+         authorizationStatus.className = 'status-message info';
+
+         try {
+           // First query mode and authorization URL
+           const modeResp = await fetch(`/api/authorize/${profileName}`, { method: 'GET' });
+           const mode = await modeResp.json();
+           if (!modeResp.ok) {
+             authorizationStatus.textContent = mode.error || 'Failed to start authorization';
+             authorizationStatus.className = 'status-message error';
+             return;
+           }
+
+           if (mode.mode === 'manual') {
+             // Show manual UI: open URL and provide paste box
+             window.open(mode.auth_url || mode.authUrl || mode.authUrl, '_blank');
+             authorizationStatus.innerHTML = '';
+             const container = document.createElement('div');
+             container.style.marginTop = '8px';
+             container.innerHTML = `
+               <div class="form-group">
+                 <label for="pastedRedirectUrl">Paste redirected URL (or code):</label>
+                 <input type="text" id="pastedRedirectUrl" placeholder="Paste the full https://localhost:... URL or the code value" style="width:100%;box-sizing:border-box" />
+               </div>
+               <div class="form-actions" style="margin-top:8px">
+                 <button class="btn btn-primary" id="submitPastedUrlBtn">Submit</button>
+               </div>
+             `;
+             authorizationStatus.appendChild(container);
+
+             const submitBtn = document.getElementById('submitPastedUrlBtn');
+             submitBtn.addEventListener('click', async () => {
+               const pasted = document.getElementById('pastedRedirectUrl').value.trim();
+               if (!pasted) {
+                 authorizationStatus.textContent = 'Please paste the redirected URL or code.';
+                 authorizationStatus.className = 'status-message error';
+                 return;
+               }
+               submitBtn.disabled = true;
+               submitBtn.textContent = 'Submitting...';
+               try {
+                 const exResp = await fetch('/api/authorize-exchange', {
+                   method: 'POST',
+                   headers: { 'Content-Type': 'application/json' },
+                   body: JSON.stringify({ profileName, redirectUrl: pasted })
+                 });
+                 const ex = await exResp.json();
+                 if (exResp.ok) { 
+                   try { sessionStorage.setItem('fitbaus:justAuthorized', profileName); } catch(_) {}
+                   authorizationStatus.textContent = '✅ Authorization complete! You can close this dialog and fetch data.';
+                   authorizationStatus.className = 'status-message success';
+                   // Refresh profiles dropdown
+                   setTimeout(() => {
+                     loadAvailableProfiles();
+                     hideNoProfileModal();
+                   }, 1500);
+                 } else {
+                   authorizationStatus.textContent = ex.error || 'Failed to exchange code.';
+                   authorizationStatus.className = 'status-message error';
+                 }
+               } catch (e) {
+                 authorizationStatus.textContent = 'Network error during exchange.';
+                 authorizationStatus.className = 'status-message error';
+               } finally {
+                 submitBtn.disabled = false;
+                 submitBtn.textContent = 'Submit';
+               }
+             });
+
+             authBtn.disabled = false;
+             authBtn.textContent = 'Authorize with Fitbit';
+             return;
+           }
+
+           // Background mode: start job
+           authorizationStatus.textContent = 'Starting authorization... A browser window may open.';
+           const startResp = await fetch(`/api/authorize/${profileName}`, { method: 'POST' });
+           const startResult = await startResp.json();
+           if (!startResp.ok) {
+             authorizationStatus.textContent = startResult.error || 'Failed to start authorization';
+             authorizationStatus.className = 'status-message error';
+             return;
+           }
+
+           const jobId = startResult.job_id;
+           authorizationStatus.textContent = 'Authorization in progress...';
+
+           // Poll status until completion
+           const pollIntervalMs = 2000;
+           const timeoutMs = 15 * 60 * 1000; // 15 minutes
+           const startTime = Date.now();
+
+           async function poll() {
+             try {
+               const s = await fetch(`/api/authorize-status/${jobId}`);
+               const st = await s.json();
+               if (!s.ok) {
+                 authorizationStatus.textContent = st.error || 'Authorization status error';
+                 authorizationStatus.className = 'status-message error';
+                 authBtn.disabled = false;
+                 authBtn.textContent = 'Authorize with Fitbit';
+                 return;
+               }
+
+               if (st.status === 'completed') { 
+                 try { sessionStorage.setItem('fitbaus:justAuthorized', profileName); } catch(_) {}
+                 authorizationStatus.textContent = '✅ Authorization complete! You can close this dialog and fetch data.';
+                 authorizationStatus.className = 'status-message success';
+                 // Refresh profiles dropdown
+                 setTimeout(() => {
+                   loadAvailableProfiles();
+                   hideNoProfileModal();
+                 }, 1500);
+                 authBtn.disabled = false;
+                 authBtn.textContent = 'Authorize with Fitbit';
+                 return;
+               }
+               if (st.status === 'failed' || st.status === 'error' || st.status === 'timeout') {
+                 const err = st.error || 'Authorization failed.';
+                 authorizationStatus.textContent = `❌ ${err}`;
+                 authorizationStatus.className = 'status-message error';
+                 authBtn.disabled = false;
+                 authBtn.textContent = 'Authorize with Fitbit';
+                 return;
+               }
+
+               if (Date.now() - startTime > timeoutMs) {
+                 authorizationStatus.textContent = 'Authorization timed out. Please try again.';
+                 authorizationStatus.className = 'status-message error';
+                 authBtn.disabled = false;
+                 authBtn.textContent = 'Authorize with Fitbit';
+                 return;
+               }
+
+               // Keep polling
+               setTimeout(poll, pollIntervalMs);
+             } catch (e) {
+               console.error('Polling error', e);
+               authorizationStatus.textContent = 'Network error during authorization.';
+               authorizationStatus.className = 'status-message error';
+               authBtn.disabled = false;
+               authBtn.textContent = 'Authorize with Fitbit';
+             }
+           }
+           setTimeout(poll, pollIntervalMs);
+         } catch (error) {
+           console.error('Error starting authorization:', error);
+           authorizationStatus.textContent = 'Network error. Please try again.';
+           authorizationStatus.className = 'status-message error';
+         }
+       });
+     }
+     
+     // Escape key to close modals
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          if (noProfileModal && noProfileModal.classList.contains('active')) {
+            const hasExistingProfiles = noProfileModal.dataset.hasExistingProfiles === 'true';
+            if (hasExistingProfiles) {
+              hideNoProfileModal();
+            }
+          }
+          
+          const selectionModal = document.getElementById('profileSelectionModal');
+          if (selectionModal && selectionModal.classList.contains('active')) {
+            closeProfileSelectionModal();
+          }
+          
+          const authorizeModal = document.getElementById('authorizeProfileModal');
+          if (authorizeModal && authorizeModal.classList.contains('active')) {
+            closeAuthorizeProfileModal();
+          }
+         
+         const authAckModal = document.getElementById('authAckModal');
+         if (authAckModal && authAckModal.classList.contains('active')) {
+           authAckModal.classList.remove('active');
+         }
+         
+         const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+         if (confirmDeleteModal && confirmDeleteModal.classList.contains('active')) {
+           confirmDeleteModal.classList.remove('active');
+         }
+       }
+     });
+   </script>
+ </body>
+ </html>
+

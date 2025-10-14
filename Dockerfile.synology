@@ -1,0 +1,41 @@
+# Optimized Dockerfile for Synology NAS deployment
+# Using Alpine Linux for minimal size and resource usage
+FROM python:3.11-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install minimal system dependencies
+RUN apk add --no-cache \
+    curl \
+    tzdata \
+    && rm -rf /var/cache/apk/*
+
+# Copy requirements first for better caching
+RUN adduser -D -u 10001 app
+COPY --chown=app:app requirements.txt .
+
+# Install Python dependencies with optimizations
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip cache purge
+
+# Copy the application code
+COPY --chown=app:app . .
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/profiles /app/logs /app/config && \
+    chown -R app:app /app
+
+# Switch to non-root user
+USER app
+
+# Expose port for the web server
+EXPOSE 9000
+
+# Healthcheck for Synology monitoring
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -fsS http://localhost:9000/api/health || exit 1
+
+# Default command with optimized Gunicorn settings for NAS
+CMD ["gunicorn", "--config", "gunicorn.conf.py", "server:app"]

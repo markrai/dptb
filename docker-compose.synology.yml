@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  fitbaus:
+    build: .
+    container_name: fitbaus-app
+    # Run as non-root user for security
+    user: "10001:10001"
+    
+    ports:
+      - "9156:9156"   # Web UI (host:container)
+    
+    volumes:
+      # Synology-specific volume mounts for data persistence
+      - /volume1/docker/fitbaus/profiles:/app/profiles
+      - /volume1/docker/fitbaus/logs:/app/logs
+      # Optional: Mount config directory for easy management
+      - /volume1/docker/fitbaus/config:/app/config:ro
+    
+    environment:
+      - PYTHONIOENCODING=utf-8
+      - PYTHONUNBUFFERED=1
+      - TZ=America/New_York        # Change to your timezone
+      - PORT=9000
+      - WORKERS=1                  # Single worker for NAS efficiency
+      - LOG_LEVEL=info
+      # Fitbit OAuth settings (update with your domain)
+      - FITBIT_REDIRECT_URI=https://your-nas-domain.com:9000/callback
+      - FITBIT_CLIENT_ID=${FITBIT_CLIENT_ID}
+      - FITBIT_CLIENT_SECRET=${FITBIT_CLIENT_SECRET}
+    
+    # Resource limits optimized for Synology NAS
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    
+    # Health check for monitoring
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Restart policy for NAS reliability
+    restart: unless-stopped
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Network configuration
+    networks:
+      - fitbaus-network
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Read-only root filesystem for security
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/tmp
+
+# Custom network for better isolation
+networks:
+  fitbaus-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Optional: Add a reverse proxy service for HTTPS
+# Uncomment if you want to handle SSL termination in the container
+# services:
+#   nginx-proxy:
+#     image: nginx:alpine
+#     container_name: fitbaus-proxy
+#     ports:
+#       - "80:80"
+#       - "443:443"
+#     volumes:
+#       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#       - /volume1/docker/fitbaus/ssl:/etc/nginx/ssl:ro
+#     depends_on:
+#       - fitbaus
+#     networks:
+#       - fitbaus-network
+#     restart: unless-stopped

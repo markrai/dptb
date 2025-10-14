@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  dont-poke-the-bear:
+    # Using markraidc Docker Hub username
+    image: markraidc/dont-poke-the-bear:latest
+    container_name: dont-poke-the-bear
+    ports:
+      - "9156:9156"
+    volumes:
+      # Mount profiles directory for data persistence
+      - ./profiles:/app/profiles
+      # Optional: Mount logs directory
+      - ./logs:/app/logs
+    environment:
+      # Required: Set your Fitbit Developer App credentials
+      - FITBIT_CLIENT_ID=${FITBIT_CLIENT_ID}
+      - FITBIT_CLIENT_SECRET=${FITBIT_CLIENT_SECRET}
+      # Optional: Set timezone
+      - TZ=${TZ:-America/New_York}
+      # Optional: Set log level
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    restart: unless-stopped
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Resource limits (adjust based on your system)
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+# Optional: Add a reverse proxy for HTTPS
+# Uncomment if you want to handle SSL termination
+# services:
+#   nginx-proxy:
+#     image: nginx:alpine
+#     container_name: dont-poke-the-bear-proxy
+#     ports:
+#       - "80:80"
+#       - "443:443"
+#     volumes:
+#       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#       - ./ssl:/etc/nginx/ssl:ro
+#     depends_on:
+#       - dont-poke-the-bear
+#     restart: unless-stopped

@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Sensitive data - CRITICAL: Never commit these
+profiles/
+!profiles/index.json
+!profiles/.gitkeep
+auth/
+*.csv
+*.log
+
+# Credentials and tokens
+**/client.json
+**/tokens.json
+**/tokens.json.bak
+**/auth/
+**/csv/
+
+# JSON files (except essential ones)
+*.json
+!requirements.json
+!profiles/index.json
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+
+# Docker
+.dockerignore

@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  fitbaus:
+    build: .
+    container_name: fitbaus-app
+    # Optional (Linux): run container as your host user to avoid bind-mount permission issues
+    # user: "${UID:-10001}:${GID:-10001}"
+    ports:
+      - "9156:9156"   # Web UI (host:container)
+      # - "8080:8080" # Optional: local HTTPS callback port for background OAuth
+    volumes:
+      # Mount data directories to persist data
+      - ./profiles:/app/profiles
+    environment:
+      - PYTHONIOENCODING=utf-8
+      - TZ=Etc/UTC        # Use UTC timezone for consistency
+      # - FITBIT_REDIRECT_URI=https://localhost:8080/callback   # Optional for background OAuth
+      # - FITBIT_SSL_CERT=/certs/cert.pem                      # Optional TLS for background OAuth
+      # - FITBIT_SSL_KEY=/certs/key.pem                        # Optional TLS for background OAuth
+    # volumes:
+    #   - ./certs:/certs:ro   # If using background OAuth with local HTTPS
+    restart: unless-stopped
+    # Remove stdin_open and tty for production
+    # To access the container for setup, use: docker exec -it fitbaus-app bash

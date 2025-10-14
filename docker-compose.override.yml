@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  fitbaus:
+    build: .
+    container_name: fitbaus-app
+    ports:
+      - "9155:9000"
+    volumes:
+      - ./profiles:/app/profiles
+    environment:
+      - PYTHONIOENCODING=utf-8
+      - TZ=Etc/UTC
+    restart: unless-stopped
