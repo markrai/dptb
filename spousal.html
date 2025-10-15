@@ -1706,9 +1706,38 @@
             tooltip = 'Profile 2 is up to date; Profile 1 is not';
           }
 
-          dateElement.innerHTML = `${formattedDate} <span style="color:${bulletColor};margin-left:4px;font-size:14px;font-style:normal;font-family:Arial,sans-serif;">•</span>`;
+          // Apply status color to the date text only (no bullet)
+          dateElement.style.color = bulletColor;
+          dateElement.innerHTML = `${formattedDate}`;
           dateElement.title = tooltip;
           dateElement.setAttribute('aria-label', tooltip);
+
+          // Visually indicate which profile image is stale by grayscaling it
+          try {
+            const img1 = document.getElementById('husbandImage');
+            const img2 = document.getElementById('wifeImage');
+            if (img1) {
+              img1.style.filter = user1UpToDate ? 'none' : 'grayscale(100%)';
+              img1.title = user1UpToDate ? 'Profile 1 is up to date' : 'Profile 1 is not up to date';
+            }
+            if (img2) {
+              img2.style.filter = user2UpToDate ? 'none' : 'grayscale(100%)';
+              img2.title = user2UpToDate ? 'Profile 2 is up to date' : 'Profile 2 is not up to date';
+            }
+            // Also reflect in About/manage avatars if present
+            const a1 = document.getElementById('profile1Avatar');
+            const a2 = document.getElementById('profile2Avatar');
+            if (a1) a1.style.filter = user1UpToDate ? 'none' : 'grayscale(100%)';
+            if (a2) a2.style.filter = user2UpToDate ? 'none' : 'grayscale(100%)';
+
+            // Also grayscale the health metrics section in each card when stale
+            const m1 = document.getElementById('profile1HRV');
+            const m2 = document.getElementById('profile2HRV');
+            const col1 = m1 ? (m1.parentElement && m1.parentElement.parentElement) : null;
+            const col2 = m2 ? (m2.parentElement && m2.parentElement.parentElement) : null;
+            if (col1 && col1.style) col1.style.filter = user1UpToDate ? 'none' : 'grayscale(100%)';
+            if (col2 && col2.style) col2.style.filter = user2UpToDate ? 'none' : 'grayscale(100%)';
+          } catch(_) { /* noop */ }
        } catch (error) {
          dateElement.textContent = '--';
        }
