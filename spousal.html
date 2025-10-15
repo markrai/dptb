@@ -1688,11 +1688,12 @@
           const user1UpToDate = date1 && isToday(date1);
           const user2UpToDate = date2 && isToday(date2);
           
-          let bulletColor = '#ff6b6b'; // Default red (both stale)
+          // Muted status colors
+          let bulletColor = '#dc2626'; // Muted red (both stale)
           if (user1UpToDate && user2UpToDate) {
-            bulletColor = '#22c55e'; // Green (both up-to-date)
+            bulletColor = '#16a34a'; // Muted green (both up-to-date)
           } else if (user1UpToDate || user2UpToDate) {
-            bulletColor = '#ff9500'; // Orange (one up-to-date)
+            bulletColor = '#d97706'; // Muted orange (one up-to-date)
           }
           // Build tooltip message for hover
           let tooltip = '';
