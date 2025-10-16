@@ -49,3 +49,4 @@ auth/
 
 # Docker
 .dockerignore
+*.tar

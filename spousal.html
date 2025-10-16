@@ -1738,6 +1738,15 @@
             const col2 = m2 ? (m2.parentElement && m2.parentElement.parentElement) : null;
             if (col1 && col1.style) col1.style.filter = user1UpToDate ? 'none' : 'grayscale(100%)';
             if (col2 && col2.style) col2.style.filter = user2UpToDate ? 'none' : 'grayscale(100%)';
+
+            // Couple Wellness card grayscale if any user stale
+            const coupleCard = document.getElementById('coupleWellness');
+            const anyStale = (!user1UpToDate) || (!user2UpToDate);
+            if (coupleCard && coupleCard.style) coupleCard.style.filter = anyStale ? 'grayscale(100%)' : 'none';
+
+            // Joint Burnout Risk card grayscale if any user stale
+            const jointBurnoutCard = document.getElementById('jointBurnoutCard');
+            if (jointBurnoutCard && jointBurnoutCard.style) jointBurnoutCard.style.filter = anyStale ? 'grayscale(100%)' : 'none';
           } catch(_) { /* noop */ }
        } catch (error) {
          dateElement.textContent = '--';
