@@ -13,7 +13,7 @@ A wellness monitoring app for couples that analyzes Fitbit data to calculate dai
 ## Features
 
 - **Wellness Scoring**: Daily wellness calculations based on historical Fitbit data
-- **Burnout Prediction**: Joint burnout risk assessment (based on the last 7 days of sleep quality, elevated RHR, and daily step counts.
+- **Burnout Prediction**: Joint burnout risk (last 7 days of sleep quality, elevated RHR, and daily step counts)
 - **Responsive Design**: Works on desktop and mobile devices
 - **Real-time Data**: Fresh data indicators with color-coded status bullet
 
