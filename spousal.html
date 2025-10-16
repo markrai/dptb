@@ -14,6 +14,27 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@latest/dist/chartjs-chart-matrix.min.js"></script>
   <link rel="stylesheet" href="style.css">
   <style>
+    /* Responsive variables */
+    :root{
+      --scale: 1;
+      --pad: 20px;
+      --gap: 16px;
+      --img-h: 160px;
+      --font-lg: 32px;
+      --font-md: 18px;
+      --font-sm: 12px;
+    }
+    @media (orientation: portrait){
+      :root{
+        --pad: clamp(10px, 2.2vh, 16px);
+        --gap: clamp(8px, 2vh, 14px);
+        --img-h: clamp(120px, 22vh, 180px);
+        --font-lg: clamp(22px, 3.2vh, 28px);
+        --font-md: clamp(14px, 2.2vh, 16px);
+        --font-sm: clamp(10px, 1.8vh, 12px);
+      }
+    }
+
     /* Mobile-specific tweaks: keep UI minimal */
     .controls .cell:not(.profile-cell) { display: none; }
     .toolbar .btn { display: none; }
@@ -434,49 +455,49 @@
       
        <!-- Spousal Signals View -->
        <div id="spousalSignalsView" style="display:block;">
-        <div style="display:flex;gap:16px;justify-content:center;">
-          <div style="flex:1;background:#1a2349;border-radius:12px;padding:20px;display:flex;gap:20px;position:relative;">
+        <div style="display:flex;gap:var(--gap);justify-content:center;">
+          <div style="flex:1;background:#1a2349;border-radius:12px;padding:var(--pad);display:flex;gap:var(--gap);position:relative;">
             <!-- Data section on the left -->
             <div style="flex:0 0 200px;text-align:center;">
               <h3 style="color:#ffffff;margin:0 0 10px 0;">Profile 1</h3>
-              <div style="margin-bottom:20px;">
-                <div id="profile1HRV" style="font-size:32px;font-weight:bold;color:#ffcc66;margin:10px 0;">--</div>
-                <div style="font-size:12px;color:#9aa5c6;">Heart Rate Variability</div>
+              <div style="margin-bottom:var(--pad);">
+                <div id="profile1HRV" style="font-size:var(--font-lg);font-weight:bold;color:#ffcc66;margin:10px 0;">--</div>
+                <div style="font-size:var(--font-sm);color:#9aa5c6;">Heart Rate Variability</div>
               </div>
               <div>
-                <div id="profile1Sleep" style="font-size:32px;font-weight:bold;color:#4a90e2;margin:10px 0;">--</div>
-                <div style="font-size:12px;color:#9aa5c6;">Sleep Score</div>
+                <div id="profile1Sleep" style="font-size:var(--font-lg);font-weight:bold;color:#4a90e2;margin:10px 0;">--</div>
+                <div style="font-size:var(--font-sm);color:#9aa5c6;">Sleep Score</div>
               </div>
-              <div style="margin-top:20px;">
-                <div id="profile1Wellness" style="font-size:28px;font-weight:bold;color:#4CAF50;margin:10px 0;">--</div>
-                <div style="font-size:12px;color:#9aa5c6;">Wellness Score</div>
+              <div style="margin-top:var(--gap);">
+                <div id="profile1Wellness" style="font-size:calc(var(--font-lg) - 4px);font-weight:bold;color:#4CAF50;margin:10px 0;">--</div>
+                <div style="font-size:var(--font-sm);color:#9aa5c6;">Wellness Score</div>
               </div>
             </div>
             <!-- Image section on the right -->
             <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-              <img id="husbandImage" src="assets/husband.png" alt="Husband" style="height:120px;width:auto;object-fit:contain;cursor:pointer;" title="Select profiles">
+              <img id="husbandImage" src="assets/husband.png" alt="Husband" style="height:var(--img-h);width:auto;object-fit:contain;cursor:pointer;" title="Select profiles">
             </div>
           </div>
-          <div style="flex:1;background:#1a2349;border-radius:12px;padding:20px;display:flex;gap:20px;position:relative;">
+          <div style="flex:1;background:#1a2349;border-radius:12px;padding:var(--pad);display:flex;gap:var(--gap);position:relative;">
             <!-- Data section on the left -->
             <div style="flex:0 0 200px;text-align:center;">
               <h3 style="color:#ffffff;margin:0 0 10px 0;">Profile 2</h3>
-              <div style="margin-bottom:20px;">
-                <div id="profile2HRV" style="font-size:32px;font-weight:bold;color:#ffcc66;margin:10px 0;">--</div>
-                <div style="font-size:12px;color:#9aa5c6;">Heart Rate Variability</div>
+              <div style="margin-bottom:var(--pad);">
+                <div id="profile2HRV" style="font-size:var(--font-lg);font-weight:bold;color:#ffcc66;margin:10px 0;">--</div>
+                <div style="font-size:var(--font-sm);color:#9aa5c6;">Heart Rate Variability</div>
               </div>
               <div>
-                <div id="profile2Sleep" style="font-size:32px;font-weight:bold;color:#4a90e2;margin:10px 0;">--</div>
-                <div style="font-size:12px;color:#9aa5c6;">Sleep Score</div>
+                <div id="profile2Sleep" style="font-size:var(--font-lg);font-weight:bold;color:#4a90e2;margin:10px 0;">--</div>
+                <div style="font-size:var(--font-sm);color:#9aa5c6;">Sleep Score</div>
               </div>
-              <div style="margin-top:20px;">
-                <div id="profile2Wellness" style="font-size:28px;font-weight:bold;color:#4CAF50;margin:10px 0;">--</div>
-                <div style="font-size:12px;color:#9aa5c6;">Wellness Score</div>
+              <div style="margin-top:var(--gap);">
+                <div id="profile2Wellness" style="font-size:calc(var(--font-lg) - 4px);font-weight:bold;color:#4CAF50;margin:10px 0;">--</div>
+                <div style="font-size:var(--font-sm);color:#9aa5c6;">Wellness Score</div>
               </div>
             </div>
             <!-- Image section on the right -->
             <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-              <img id="wifeImage" src="assets/wife.png" alt="Wife" style="height:120px;width:auto;object-fit:contain;cursor:pointer;" title="Select profiles">
+              <img id="wifeImage" src="assets/wife.png" alt="Wife" style="height:var(--img-h);width:auto;object-fit:contain;cursor:pointer;" title="Select profiles">
             </div>
           </div>
         </div>
@@ -644,6 +665,40 @@
   <script src="version.js"></script>
   <script src="script.js"></script>
   <script>
+    // Dynamic layout adjuster
+    function adjustLayout(){
+      try{
+        const portrait = window.innerHeight > window.innerWidth;
+        const baseW = 1200, baseH = 900;
+        const s = Math.max(portrait ? 0.7 : 0.8, Math.min(1, Math.min(window.innerWidth/baseW, window.innerHeight/baseH)));
+        const root = document.documentElement;
+        root.style.setProperty('--scale', String(s));
+        // Scale derived vars lightly in portrait
+        if (portrait){
+          const imgH = Math.round(Math.min(Math.max(window.innerHeight*0.22, 120), 180));
+          root.style.setProperty('--img-h', imgH + 'px');
+        }
+        // Tighten bottom navigation in portrait
+        const bottom = document.getElementById('bottomNavigation');
+        if (bottom){
+          if (portrait){
+            bottom.style.padding = '8px 12px';
+          } else {
+            bottom.style.padding = '12px 16px';
+          }
+        }
+        // Ensure main view consumes height in portrait
+        const main = document.getElementById('spousalSignalsView');
+        if (main){
+          if (portrait){
+            main.style.minHeight = 'calc(100vh - 140px)';
+          } else {
+            main.style.minHeight = '';
+          }
+        }
+      }catch(_){/* noop */}
+    }
+
     // Profile Management Functions
     let availableProfiles = [];
     let selectedProfile1 = null;
@@ -800,6 +855,10 @@
     
     // Profile selection change handlers
     document.addEventListener('DOMContentLoaded', function() {
+      // Adjust responsive layout
+      adjustLayout();
+      window.addEventListener('resize', adjustLayout);
+      window.addEventListener('orientationchange', adjustLayout);
       // Load version number
       if (window.DPTB_VERSION) {
         const versionElement = document.getElementById('appVersion');
@@ -1824,7 +1883,9 @@
       }
      
      // Spousal view - no switching, just load spousal data
-     document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
+      // Adjust responsive layout
+      adjustLayout();
        // Load custom avatars on page load
        loadCustomAvatars();
        
