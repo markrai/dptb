@@ -475,7 +475,7 @@
             </div>
             <!-- Image section on the right -->
             <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-              <img id="husbandImage" src="assets/husband.png" alt="Husband" style="height:var(--img-h);width:auto;object-fit:contain;cursor:pointer;" title="Select profiles">
+              <img id="husbandImage" src="assets/husband/1.png" alt="image #1" style="height:var(--img-h);width:calc(var(--img-h) * 1.035);object-fit:contain;cursor:pointer;" title="Select profiles" onerror="console.error('❌ Initial husband wellness image failed to load:', this.src)">
             </div>
           </div>
           <div style="flex:1;background:#1a2349;border-radius:12px;padding:var(--pad);display:flex;gap:var(--gap);position:relative;">
@@ -497,7 +497,7 @@
             </div>
             <!-- Image section on the right -->
             <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-              <img id="wifeImage" src="assets/wife.png" alt="Wife" style="height:var(--img-h);width:auto;object-fit:contain;cursor:pointer;" title="Select profiles">
+              <img id="wifeImage" src="assets/wife/1.png" alt="image #1" style="height:var(--img-h);width:calc(var(--img-h) * 1.035);object-fit:contain;cursor:pointer;" title="Select profiles" onerror="console.error('❌ Initial wife wellness image failed to load:', this.src)">
             </div>
           </div>
         </div>
@@ -809,7 +809,10 @@
           const profile2Name = typeof profiles[1] === 'string' ? profiles[1] : profiles[1].name;
           if (profile2Display) profile2Display.textContent = profile2Name;
           selectedProfile2 = profile2Name;
-          
+        }
+        
+        // Load data for selected profiles (even if only one profile exists)
+        if (profiles.length >= 1) {
           // Update profile titles
           updateProfileTitles();
           
@@ -906,6 +909,12 @@
         return { 
           profileIds: [selectedProfile1, selectedProfile2], 
           labels: [selectedProfile1, selectedProfile2] 
+        };
+      } else if (selectedProfile1) {
+        // Only one profile available
+        return { 
+          profileIds: [selectedProfile1, null], 
+          labels: [selectedProfile1, 'No Profile'] 
         };
       }
       return { profileIds: [null, null], labels: ['No Profile', 'No Profile'] };
@@ -1513,11 +1522,69 @@
          }
        }
 
-     // Global avatar management functions
-     function changeAvatar(profileId) {
-       const fileInput = document.getElementById(profileId + 'FileInput');
-       fileInput.click();
-     }
+    // Global avatar management functions
+    function changeAvatar(profileId) {
+      const fileInput = document.getElementById(profileId + 'FileInput');
+      fileInput.click();
+    }
+
+    // Wellness-based avatar selection
+    function getWellnessAvatarPath(profileNumber, wellnessScore) {
+      // Profile 1 = husband, Profile 2 = wife
+      const folder = profileNumber === 1 ? 'husband' : 'wife';
+      
+      // Determine wellness level (1-5)
+      let wellnessLevel;
+      if (wellnessScore >= 80) wellnessLevel = 1;
+      else if (wellnessScore >= 60) wellnessLevel = 2;
+      else if (wellnessScore >= 40) wellnessLevel = 3;
+      else if (wellnessScore >= 20) wellnessLevel = 4;
+      else wellnessLevel = 5;
+      
+      return `assets/${folder}/${wellnessLevel}.png`;
+    }
+
+    // Check if wellness image exists, return placeholder if not
+    function getWellnessAvatarWithFallback(profileNumber, wellnessScore) {
+      const wellnessPath = getWellnessAvatarPath(profileNumber, wellnessScore);
+      const wellnessLevel = wellnessScore >= 80 ? 1 : wellnessScore >= 60 ? 2 : wellnessScore >= 40 ? 3 : wellnessScore >= 20 ? 4 : 5;
+      
+      // Create a placeholder image if the wellness image doesn't exist
+      // This will be handled by the image onerror event
+      return {
+        path: wellnessPath,
+        alt: `image #${wellnessLevel}`,
+        fallback: profileNumber === 1 ? 'assets/husband/1.png' : 'assets/wife/1.png'
+      };
+    }
+
+
+    // Update avatar based on wellness score
+    function updateWellnessAvatar(profileNumber, wellnessScore, isStale = false) {
+      // Always update wellness avatar (no localStorage check)
+
+      const avatarInfo = getWellnessAvatarWithFallback(profileNumber, wellnessScore);
+      const imageId = profileNumber === 1 ? 'husbandImage' : 'wifeImage';
+      const imageElement = document.getElementById(imageId);
+      
+      if (imageElement) {
+        imageElement.src = avatarInfo.path;
+        imageElement.alt = avatarInfo.alt;
+        
+        // Apply grayscale if data is stale
+        if (isStale) {
+          imageElement.style.filter = 'grayscale(100%)';
+        } else {
+          imageElement.style.filter = 'none';
+        }
+        
+        // Handle missing image with fallback to level 1 image
+        imageElement.onerror = function() {
+          console.error(`Wellness image failed to load: ${avatarInfo.path}, falling back to ${avatarInfo.fallback}`);
+          this.src = avatarInfo.fallback;
+        };
+      }
+    }
 
      function handleAvatarUpload(profileId, fileInput) {
        const file = fileInput.files[0];
@@ -1565,8 +1632,7 @@
            if (wifeImg) wifeImg.src = e.target.result;
          }
          
-         // Store the custom avatar in localStorage
-         localStorage.setItem(storageKey, e.target.result);
+         // Custom avatar is now stored server-side only
          
          // Also save to server for persistence across devices
          try {
@@ -1609,96 +1675,82 @@
        reader.readAsDataURL(file);
      }
 
-     async function loadCustomAvatars() {
-       // Load custom avatars from server first, then fall back to localStorage
-       try {
-         const [profile1Response, profile2Response] = await Promise.all([
-           fetch('/api/get-avatar/profile1'),
-           fetch('/api/get-avatar/profile2')
-         ]);
-         
-         // Load profile1 avatar
-         if (profile1Response.ok) {
-           const profile1Data = await profile1Response.json();
-           if (profile1Data.avatar) {
-             document.getElementById('profile1Avatar').src = profile1Data.avatar;
-             const husbandImg = document.getElementById('husbandImage');
-             if (husbandImg) husbandImg.src = profile1Data.avatar;
-             // Update localStorage with server data
-             localStorage.setItem('profile1_avatar', profile1Data.avatar);
-           }
-         } else {
-           // Fallback to localStorage
-           const profile1Avatar = localStorage.getItem('profile1_avatar');
-           if (profile1Avatar) {
-             document.getElementById('profile1Avatar').src = profile1Avatar;
-             const husbandImg = document.getElementById('husbandImage');
-             if (husbandImg) husbandImg.src = profile1Avatar;
-           }
-         }
-         
-         // Load profile2 avatar
-         if (profile2Response.ok) {
-           const profile2Data = await profile2Response.json();
-           if (profile2Data.avatar) {
-             document.getElementById('profile2Avatar').src = profile2Data.avatar;
-             const wifeImg = document.getElementById('wifeImage');
-             if (wifeImg) wifeImg.src = profile2Data.avatar;
-             // Update localStorage with server data
-             localStorage.setItem('profile2_avatar', profile2Data.avatar);
-           }
-         } else {
-           // Fallback to localStorage
-           const profile2Avatar = localStorage.getItem('profile2_avatar');
-           if (profile2Avatar) {
-             document.getElementById('profile2Avatar').src = profile2Avatar;
-             const wifeImg = document.getElementById('wifeImage');
-             if (wifeImg) wifeImg.src = profile2Avatar;
-           }
-         }
-       } catch (error) {
-         console.warn('Error loading avatars from server, using localStorage:', error);
-         // Fallback to localStorage only
-         const profile1Avatar = localStorage.getItem('profile1_avatar');
-         const profile2Avatar = localStorage.getItem('profile2_avatar');
-         
-         if (profile1Avatar) {
-           document.getElementById('profile1Avatar').src = profile1Avatar;
-           const husbandImg = document.getElementById('husbandImage');
-           if (husbandImg) husbandImg.src = profile1Avatar;
-         }
-         
-         if (profile2Avatar) {
-           document.getElementById('profile2Avatar').src = profile2Avatar;
-           const wifeImg = document.getElementById('wifeImage');
-           if (wifeImg) wifeImg.src = profile2Avatar;
-         }
-       }
-     }
+    async function loadCustomAvatars() {
+      try {
+        // Load avatars from server only
+        const [profile1Response, profile2Response] = await Promise.all([
+          fetch('/api/get-avatar/profile1'),
+          fetch('/api/get-avatar/profile2')
+        ]);
+        
+        // Load profile1 avatar
+        if (profile1Response.ok) {
+          const profile1Data = await profile1Response.json();
+          if (profile1Data.avatar) {
+            console.log('Setting profile1 avatar from server:', profile1Data.avatar);
+            const profile1AvatarEl = document.getElementById('profile1Avatar');
+            if (profile1AvatarEl) profile1AvatarEl.src = profile1Data.avatar;
+            const husbandImg = document.getElementById('husbandImage');
+            if (husbandImg) husbandImg.src = profile1Data.avatar;
+          }
+        }
+        
+        // Load profile2 avatar
+        if (profile2Response.ok) {
+          const profile2Data = await profile2Response.json();
+          if (profile2Data.avatar) {
+            console.log('Setting profile2 avatar from server:', profile2Data.avatar);
+            const profile2AvatarEl = document.getElementById('profile2Avatar');
+            if (profile2AvatarEl) profile2AvatarEl.src = profile2Data.avatar;
+            const wifeImg = document.getElementById('wifeImage');
+            if (wifeImg) wifeImg.src = profile2Data.avatar;
+          }
+        }
+      } catch (error) {
+        console.warn('Error loading avatars from server:', error);
+        // No localStorage fallback - let wellness avatars handle it
+      }
+    }
 
      function resetAvatar(profileId) {
-       // Reset to default avatar
-       const defaultAvatar = profileId === 'profile1' ? 'assets/husband.png' : 'assets/wife.png';
-       document.getElementById(profileId + 'Avatar').src = defaultAvatar;
+      // Custom avatar is now managed server-side only
        
-       // Also reset the main display images
-       if (profileId === 'profile1') {
-         const husbandImg = document.getElementById('husbandImage');
-         if (husbandImg) husbandImg.src = defaultAvatar;
-       } else if (profileId === 'profile2') {
-         const wifeImg = document.getElementById('wifeImage');
-         if (wifeImg) wifeImg.src = defaultAvatar;
+       // Determine profile number for wellness-based avatar
+       let profileNumber;
+       if (profileId === 'profile1' || profileId === 'ammar') {
+         profileNumber = 1;
+       } else if (profileId === 'profile2' || profileId === 'nour') {
+         profileNumber = 2;
+       } else {
+         // Default to profile 1 for unknown profiles
+         profileNumber = 1;
        }
        
-       // Remove from localStorage
-       localStorage.removeItem(profileId + '_avatar');
+       // Get current wellness score to determine which wellness avatar to show
+       const wellnessElement = document.getElementById(profileNumber === 1 ? 'profile1Wellness' : 'profile2Wellness');
+       let wellnessScore = 50; // Default middle score
+       
+       if (wellnessElement && wellnessElement.textContent !== '--') {
+         // Extract numeric score from the wellness display
+         const scoreText = wellnessElement.textContent;
+         const match = scoreText.match(/(\d+)/);
+         if (match) {
+           wellnessScore = parseInt(match[1]);
+         }
+       }
+       
+       // Update to wellness-based avatar
+       updateWellnessAvatar(profileNumber, wellnessScore);
        
        // Add visual feedback
-       const avatarImg = document.getElementById(profileId + 'Avatar');
-       avatarImg.style.borderColor = '#ff6b6b';
-       setTimeout(() => {
-         avatarImg.style.borderColor = 'transparent';
-       }, 1000);
+       const imageId = profileNumber === 1 ? 'husbandImage' : 'wifeImage';
+       const avatarImg = document.getElementById(imageId);
+       if (avatarImg) {
+         avatarImg.style.borderColor = '#ff6b6b';
+         setTimeout(() => {
+           avatarImg.style.borderColor = 'transparent';
+         }, 1000);
+       }
      }
 
      // Helper: true if YYYY-MM-DD is today's date (local)
@@ -1716,19 +1768,26 @@
 
      // Global function for updating data date
       function updateDataDate(result1, result2) {
+       console.log('updateDataDate called with:', { result1, result2 });
        const dateElement = document.getElementById('dataDate');
-       if (!dateElement) return;
+       if (!dateElement) {
+         console.error('dataDate element not found');
+         return;
+       }
        
         // Get the date from the first available result
         const dateStr = result1?.date || result2?.date;
+        console.log('Date string extracted:', dateStr);
        
        if (!dateStr) {
+         console.log('No date string found, setting to --');
          dateElement.textContent = '--';
          return;
        }
        
        // Format as "Thu 10/10/2025"
        try {
+         console.log('Attempting to format date:', dateStr);
          // Parse YYYY-MM-DD directly to avoid timezone issues
          const parts = dateStr.split('-');
          const year = parseInt(parts[0]);
@@ -1740,6 +1799,7 @@
           const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
           const dayName = dayNames[d.getDay()];
           const formattedDate = `${dayName} ${month}/${day}/${year}`;
+          console.log('Formatted date:', formattedDate);
           
           // Determine bullet color based on both users' data freshness
           const date1 = result1?.date;
@@ -1772,18 +1832,18 @@
           dateElement.title = tooltip;
           dateElement.setAttribute('aria-label', tooltip);
 
-          // Visually indicate which profile image is stale by grayscaling it
+          // Apply grayscale to other UI elements (images are handled by updateWellnessAvatar)
           try {
+            // Set tooltips for images
             const img1 = document.getElementById('husbandImage');
             const img2 = document.getElementById('wifeImage');
             if (img1) {
-              img1.style.filter = user1UpToDate ? 'none' : 'grayscale(100%)';
               img1.title = user1UpToDate ? 'Profile 1 is up to date' : 'Profile 1 is not up to date';
             }
             if (img2) {
-              img2.style.filter = user2UpToDate ? 'none' : 'grayscale(100%)';
               img2.title = user2UpToDate ? 'Profile 2 is up to date' : 'Profile 2 is not up to date';
             }
+            
             // Also reflect in About/manage avatars if present
             const a1 = document.getElementById('profile1Avatar');
             const a2 = document.getElementById('profile2Avatar');
@@ -1816,6 +1876,7 @@
       async function loadSpousalHRVData() {
        try {
          const { profileIds, labels } = getFirstTwoProfiles();
+         
          const profileTitles = document.querySelectorAll('#spousalSignalsView h3');
          profileTitles[0].textContent = labels[0];
          profileTitles[1].textContent = labels[1];
@@ -1826,8 +1887,15 @@
            profileIds[1] ? loadProfileSeries(profileIds[1]) : Promise.resolve(null)
          ]);
 
+         console.log('Profile data loaded:', { p1: p1 ? 'has data' : 'null', p2: p2 ? 'has data' : 'null' });
+         if (p1) console.log('Profile 1 data structure:', { dates: p1.dates?.length, hrvDaily: Object.keys(p1.hrvDaily || {}).length, sleepDaily: Object.keys(p1.sleepDaily || {}).length });
+         if (p2) console.log('Profile 2 data structure:', { dates: p2.dates?.length, hrvDaily: Object.keys(p2.hrvDaily || {}).length, sleepDaily: Object.keys(p2.sleepDaily || {}).length });
+         
          const result1 = p1 ? computeWellness(p1) : null;
          const result2 = p2 ? computeWellness(p2) : null;
+         
+         console.log('ComputeWellness results:', { result1: result1 ? 'has result' : 'null', result2: result2 ? 'has result' : 'null' });
+         
 
           // Update per-person displays
           const p1HRV = document.getElementById('profile1HRV');
@@ -1837,16 +1905,30 @@
           const p1Well = document.getElementById('profile1Wellness');
           const p2Well = document.getElementById('profile2Wellness');
 
+          // Determine data freshness for both profiles
+          const date1 = result1?.date;
+          const date2 = result2?.date;
+          const user1UpToDate = date1 && isToday(date1);
+          const user2UpToDate = date2 && isToday(date2);
+
           if (result1) {
             const hrvValue = Number.isFinite(result1.latestHRV) ? Math.round(result1.latestHRV) : '--';
             const sleepValue = Number.isFinite(result1.latestSleep) ? Math.round(result1.latestSleep) : '--';
             p1HRV.innerHTML = hrvValue + getTrendArrow(result1.hrvTrend);
             p1Sleep.innerHTML = sleepValue + getTrendArrow(result1.sleepTrend);
             p1Well.innerHTML = labelScore(result1.metaFinal);
+            
+            // Update wellness-based avatar for profile 1
+            if (Number.isFinite(result1.metaFinal)) {
+              updateWellnessAvatar(1, result1.metaFinal, !user1UpToDate);
+            }
           } else {
             p1HRV.textContent = '--';
             p1Sleep.textContent = '--';
             p1Well.textContent = '--';
+            
+            // No wellness data available, use default wellness avatar (middle score)
+            updateWellnessAvatar(1, 50);
           }
 
           if (result2) {
@@ -1855,10 +1937,18 @@
             p2HRV.innerHTML = hrvValue + getTrendArrow(result2.hrvTrend);
             p2Sleep.innerHTML = sleepValue + getTrendArrow(result2.sleepTrend);
             p2Well.innerHTML = labelScore(result2.metaFinal);
+            
+            // Update wellness-based avatar for profile 2
+            if (Number.isFinite(result2.metaFinal)) {
+              updateWellnessAvatar(2, result2.metaFinal, !user2UpToDate);
+            }
           } else {
             p2HRV.textContent = '--';
             p2Sleep.textContent = '--';
             p2Well.textContent = '--';
+            
+            // No wellness data available, use default wellness avatar (middle score)
+            updateWellnessAvatar(2, 50);
           }
 
           // Couple aggregation display (create on first run if missing)
@@ -1868,10 +1958,12 @@
           renderJointBurnoutCard(p1, p2);
           
           // Update the data date display
+          console.log('About to call updateDataDate with:', { result1, result2 });
           updateDataDate(result1, result2);
           // Update individual profile card dates (pass both results and raw series)
           updatePerUserDates(result1, result2, p1, p2);
         } catch (e) {
+          console.error('Error in loadSpousalHRVData:', e);
           // Silent error handling
         }
       }
@@ -1886,6 +1978,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       // Adjust responsive layout
       adjustLayout();
+       // No localStorage usage - avatars are server-side only
        // Load custom avatars on page load
        loadCustomAvatars();
        
@@ -2185,8 +2278,20 @@
 
       
       
-       // Load spousal data immediately
-       loadSpousalHRVData();
+      // Load spousal data immediately
+      loadSpousalHRVData();
+      
+      // Force wellness avatars immediately (in case wellness data is not available)
+      setTimeout(() => {
+        updateWellnessAvatar(1, 50); // Default middle score
+        updateWellnessAvatar(2, 50); // Default middle score
+      }, 500);
+      
+      // Also try again after a longer delay in case the first attempt failed
+      setTimeout(() => {
+        updateWellnessAvatar(1, 50);
+        updateWellnessAvatar(2, 50);
+      }, 2000);
        
        // Auto-refresh every 24 hours
        let autoRefreshTimer = null;
@@ -2451,24 +2556,22 @@
            const profileCreated = typeof profile === 'string' ? 'Unknown' : profile.created;
            
            // Get stored avatar or use default based on profile name
-           let avatarSrc = 'assets/husband.png'; // default
+           let avatarSrc = 'assets/husband/1.png'; // default
            
            // Map profile names to avatar storage keys
            let avatarKey = null;
            if (profileName === 'ammar' || profileName === 'profile1') {
              avatarKey = 'profile1_avatar';
-             avatarSrc = 'assets/husband.png'; // default for profile1
+             avatarSrc = 'assets/husband/1.png'; // default for profile1
            } else if (profileName === 'nour' || profileName === 'profile2') {
              avatarKey = 'profile2_avatar';
-             avatarSrc = 'assets/wife.png'; // default for profile2
+             avatarSrc = 'assets/wife/1.png'; // default for profile2
            }
            
-           // Check for stored custom avatar
+           // Check for stored custom avatar from server
            if (avatarKey) {
-             const storedAvatar = localStorage.getItem(avatarKey);
-             if (storedAvatar) {
-               avatarSrc = storedAvatar;
-             }
+             // Avatar is now managed server-side only
+             // No localStorage fallback needed
            }
            
            const profileItem = document.createElement('div');

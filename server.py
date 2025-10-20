@@ -1155,6 +1155,124 @@ def authorize_exchange():
     except Exception as e:
         return jsonify({'error': f'Failed to exchange code: {str(e)}'}), 500
 
+@app.route('/api/save-avatar', methods=['POST'])
+def save_avatar():
+    """Save avatar image data for a profile"""
+    try:
+        data = request.get_json() or {}
+        profile_name = (data.get('profileName') or '').strip()
+        avatar_data = data.get('avatarData', '').strip()
+        
+        if not profile_name:
+            return jsonify({'error': 'Profile name is required'}), 400
+        
+        if not avatar_data:
+            return jsonify({'error': 'Avatar data is required'}), 400
+        
+        # Validate profile exists
+        profile_dir = f'profiles/{profile_name}'
+        if not os.path.exists(profile_dir):
+            return jsonify({'error': f'Profile "{profile_name}" not found'}), 404
+        
+        # Validate avatar data format (should be data:image/...;base64,...)
+        if not avatar_data.startswith('data:image/'):
+            return jsonify({'error': 'Invalid avatar data format'}), 400
+        
+        # Extract MIME type and base64 data
+        try:
+            header, base64_data = avatar_data.split(',', 1)
+            mime_type = header.split(':')[1].split(';')[0]
+            
+            # Validate MIME type
+            if not mime_type.startswith('image/'):
+                return jsonify({'error': 'File must be an image'}), 400
+                
+        except (ValueError, IndexError):
+            return jsonify({'error': 'Invalid avatar data format'}), 400
+        
+        # Calculate file size (base64 is ~33% larger than binary)
+        import base64
+        try:
+            decoded_size = len(base64.b64decode(base64_data))
+            if decoded_size > 5 * 1024 * 1024:  # 5MB limit
+                return jsonify({'error': 'Image file is too large. Please select an image smaller than 5MB.'}), 400
+        except Exception:
+            return jsonify({'error': 'Invalid base64 data'}), 400
+        
+        # Create avatar data structure
+        avatar_info = {
+            'avatar_data': avatar_data,
+            'uploaded_at': datetime.now().isoformat(),
+            'file_size': decoded_size,
+            'mime_type': mime_type
+        }
+        
+        # Save to profile directory
+        avatar_file = os.path.join(profile_dir, 'avatar.json')
+        with open(avatar_file, 'w', encoding='utf-8') as f:
+            json.dump(avatar_info, f, indent=2)
+        
+        print(f"Saved avatar for profile: {profile_name}")
+        return jsonify({
+            'message': f'Avatar saved successfully for profile "{profile_name}"',
+            'profileName': profile_name,
+            'fileSize': decoded_size,
+            'mimeType': mime_type
+        })
+        
+    except PermissionError as e:
+        print(f"Error saving avatar (permissions): {e}")
+        return jsonify({
+            'error': 'Failed to save avatar: permission denied',
+            'hint': (
+                "Ensure the 'profiles' directory is writable. On Docker/Linux: "
+                "`sudo chown -R 10001:10001 profiles` or set `user: \"${UID:-10001}:${GID:-10001}\"` in docker-compose.yml."
+            )
+        }), 500
+    except Exception as e:
+        print(f"Error saving avatar: {e}")
+        return jsonify({'error': f'Failed to save avatar: {str(e)}'}), 500
+
+@app.route('/api/get-avatar/<profile_name>')
+def get_avatar(profile_name):
+    """Get avatar image data for a profile"""
+    try:
+        # Validate profile name
+        import re
+        if not re.match(r'^[a-zA-Z0-9_-]+$', profile_name):
+            return jsonify({'error': 'Invalid profile name format'}), 400
+        
+        # Check if profile exists
+        profile_dir = f'profiles/{profile_name}'
+        if not os.path.exists(profile_dir):
+            return jsonify({'error': f'Profile "{profile_name}" not found'}), 404
+        
+        # Look for avatar file
+        avatar_file = os.path.join(profile_dir, 'avatar.json')
+        if not os.path.exists(avatar_file):
+            return jsonify({'error': 'No avatar found for this profile'}), 404
+        
+        # Read avatar data
+        with open(avatar_file, 'r', encoding='utf-8') as f:
+            avatar_info = json.load(f)
+        
+        # Validate avatar data structure
+        if 'avatar_data' not in avatar_info:
+            return jsonify({'error': 'Invalid avatar data format'}), 500
+        
+        return jsonify({
+            'avatar': avatar_info['avatar_data'],
+            'uploaded_at': avatar_info.get('uploaded_at'),
+            'file_size': avatar_info.get('file_size'),
+            'mime_type': avatar_info.get('mime_type')
+        })
+        
+    except json.JSONDecodeError:
+        return jsonify({'error': 'Corrupted avatar data'}), 500
+    except Exception as e:
+        print(f"Error loading avatar for {profile_name}: {e}")
+        return jsonify({'error': f'Failed to load avatar: {str(e)}'}), 500
+
 # Error handlers
 @app.errorhandler(404)
 def not_found(error):
