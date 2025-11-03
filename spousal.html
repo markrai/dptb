@@ -501,6 +501,18 @@
             </div>
           </div>
         </div>
+        
+        <!-- 7-Day Rolling Charts for Profile 1 and Profile 2 -->
+        <div style="display:flex;gap:var(--gap);justify-content:center;margin-top:16px;">
+          <div style="flex:1;background:#1a2349;border-radius:12px;padding:var(--pad);position:relative;">
+            <h3 style="color:#ffffff;margin:0 0 12px 0;text-align:center;">Profile 1 - 7 Day Trend</h3>
+            <canvas id="profile1Chart" style="max-height:250px;"></canvas>
+          </div>
+          <div style="flex:1;background:#1a2349;border-radius:12px;padding:var(--pad);position:relative;">
+            <h3 style="color:#ffffff;margin:0 0 12px 0;text-align:center;">Profile 2 - 7 Day Trend</h3>
+            <canvas id="profile2Chart" style="max-height:250px;"></canvas>
+          </div>
+        </div>
       </div>
       
     </div>
@@ -963,13 +975,17 @@
          
          const sleepDaily = aggregateSleepDaily(sleepRows);
          const hrvDaily = aggregateHRVDaily(hrvRows);
-         const dates = dedupeSorted([...Object.keys(sleepDaily), ...Object.keys(hrvDaily)]);
+         const rhrDaily = aggregateRHRDaily(rhrRows);
+         const stepsDaily = aggregateStepsDaily(stepsRows);
+         const dates = dedupeSorted([...Object.keys(sleepDaily), ...Object.keys(hrvDaily), ...Object.keys(rhrDaily), ...Object.keys(stepsDaily)]);
         
         return { 
           id: profileId, 
           dates, 
           sleepDaily, 
           hrvDaily,
+          rhrDaily,
+          stepsDaily,
           rhrRows,      // Keep as array for RHR elevation calculation
           stepsRows     // Keep as array for steps analysis
         };
@@ -1038,6 +1054,22 @@
         const out = {};
         for(const r of rows){
           if (r.dateISO && Number.isFinite(r.rmssd)) out[r.dateISO] = r.rmssd;
+        }
+        return out;
+      }
+
+      function aggregateRHRDaily(rows){
+        const out = {};
+        for(const r of rows){
+          if (r.dateISO && Number.isFinite(r.rhr)) out[r.dateISO] = r.rhr;
+        }
+        return out;
+      }
+
+      function aggregateStepsDaily(rows){
+        const out = {};
+        for(const r of rows){
+          if (r.dateISO && Number.isFinite(r.steps)) out[r.dateISO] = r.steps;
         }
         return out;
       }
@@ -1353,6 +1385,524 @@
         const lbl = bandLabel(x);
         const color = getBandColor(x);
         return `<span style="color:${color}">${Math.round(x)} (${lbl})</span>`;
+      }
+
+      // Store chart instances for cleanup and toggle state
+      let profile1ChartInstance = null;
+      let profile2ChartInstance = null;
+      let profile1ChartMode = 'combined'; // 'combined', 'rhr', or 'steps'
+      let profile2ChartMode = 'combined'; // 'combined', 'rhr', or 'steps'
+      let profile1Data = null;
+      let profile2Data = null;
+
+      function render7DayCharts(profile1, profile2) {
+        // Helper to get last 7 days of data
+        function getLast7Days(profile) {
+          if (!profile || !profile.dates || profile.dates.length === 0) {
+            return { dates: [], hrv: [], sleep: [], rhr: [], steps: [] };
+          }
+          
+          // Get last 7 dates (sorted ascending)
+          const sortedDates = [...profile.dates].sort((a, b) => a.localeCompare(b));
+          const last7Dates = sortedDates.slice(-7);
+          
+          const hrvData = [];
+          const sleepData = [];
+          const rhrData = [];
+          const stepsData = [];
+          
+          for (const date of last7Dates) {
+            const hrvValue = profile.hrvDaily?.[date];
+            const sleepValue = profile.sleepDaily?.[date];
+            const rhrValue = profile.rhrDaily?.[date];
+            const stepsValue = profile.stepsDaily?.[date];
+            
+            hrvData.push(Number.isFinite(hrvValue) ? hrvValue : null);
+            sleepData.push(Number.isFinite(sleepValue) ? sleepValue : null);
+            rhrData.push(Number.isFinite(rhrValue) ? rhrValue : null);
+            stepsData.push(Number.isFinite(stepsValue) ? stepsValue : null);
+          }
+          
+          return { dates: last7Dates, hrv: hrvData, sleep: sleepData, rhr: rhrData, steps: stepsData };
+        }
+        
+        const data1 = getLast7Days(profile1);
+        const data2 = getLast7Days(profile2);
+        
+        // Store data for toggle functionality
+        profile1Data = data1;
+        profile2Data = data2;
+        
+        // Destroy existing charts if they exist
+        if (profile1ChartInstance) {
+          profile1ChartInstance.destroy();
+          profile1ChartInstance = null;
+        }
+        if (profile2ChartInstance) {
+          profile2ChartInstance.destroy();
+          profile2ChartInstance = null;
+        }
+        
+        // Reset to combined view
+        profile1ChartMode = 'combined';
+        profile2ChartMode = 'combined';
+        
+        // Chart configuration
+        const chartConfig = {
+          type: 'line',
+          data: {
+            labels: [],
+            datasets: []
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                  color: '#9aa5c6',
+                  font: { size: 11 }
+                }
+              },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#ffffff',
+                bodyColor: '#9aa5c6',
+                borderColor: '#ffd700',
+                borderWidth: 1
+              }
+            },
+            scales: {
+              x: {
+                ticks: {
+                  color: '#9aa5c6',
+                  font: { size: 10 },
+                  maxRotation: 45,
+                  minRotation: 45
+                },
+                grid: {
+                  color: 'rgba(154, 165, 198, 0.1)'
+                }
+              },
+              y: {
+                beginAtZero: false,
+                ticks: {
+                  color: '#ffcc66',
+                  font: { size: 10 }
+                },
+                grid: {
+                  color: 'rgba(154, 165, 198, 0.1)'
+                }
+              }
+            }
+          }
+        };
+        
+        // Create Profile 1 chart
+        const canvas1 = document.getElementById('profile1Chart');
+        if (canvas1 && data1.dates.length > 0) {
+          // Format dates for display (e.g., "Jan 15")
+          const labels1 = data1.dates.map(date => {
+            const d = new Date(date + 'T00:00:00');
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          });
+          
+          // Create a deep copy of chartConfig for profile 1
+          const config1 = JSON.parse(JSON.stringify(chartConfig));
+          config1.data.labels = labels1;
+          config1.data.datasets = [
+            {
+              label: 'HRV (RMSSD)',
+              data: data1.hrv,
+              borderColor: '#ffcc66',
+              backgroundColor: 'rgba(255, 204, 102, 0.1)',
+              tension: 0.4,
+              fill: false,
+              pointRadius: 3,
+              pointHoverRadius: 5
+            },
+            {
+              label: 'Sleep Score',
+              data: data1.sleep,
+              borderColor: '#4a90e2',
+              backgroundColor: 'rgba(74, 144, 226, 0.1)',
+              tension: 0.4,
+              fill: false,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              yAxisID: 'y1'
+            }
+          ];
+          
+          // Add second y-axis for Sleep Score (0-100 scale)
+          config1.options.scales.y1 = {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            min: 0,
+            max: 100,
+            ticks: {
+              color: '#4a90e2',
+              font: { size: 10 }
+            },
+            grid: {
+              drawOnChartArea: false
+            }
+          };
+          
+          profile1ChartInstance = new Chart(canvas1, config1);
+          
+          // Make canvas clickable
+          canvas1.style.cursor = 'pointer';
+          canvas1.addEventListener('click', function() {
+            toggleChartView(1);
+          });
+        }
+        
+        // Create Profile 2 chart
+        const canvas2 = document.getElementById('profile2Chart');
+        if (canvas2 && data2.dates.length > 0) {
+          // Format dates for display
+          const labels2 = data2.dates.map(date => {
+            const d = new Date(date + 'T00:00:00');
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          });
+          
+          // Create a deep copy of chartConfig for profile 2
+          const config2 = JSON.parse(JSON.stringify(chartConfig));
+          config2.data.labels = labels2;
+          config2.data.datasets = [
+            {
+              label: 'HRV (RMSSD)',
+              data: data2.hrv,
+              borderColor: '#ffcc66',
+              backgroundColor: 'rgba(255, 204, 102, 0.1)',
+              tension: 0.4,
+              fill: false,
+              pointRadius: 3,
+              pointHoverRadius: 5
+            },
+            {
+              label: 'Sleep Score',
+              data: data2.sleep,
+              borderColor: '#4a90e2',
+              backgroundColor: 'rgba(74, 144, 226, 0.1)',
+              tension: 0.4,
+              fill: false,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              yAxisID: 'y1'
+            }
+          ];
+          
+          // Add second y-axis for Sleep Score (0-100 scale)
+          config2.options.scales.y1 = {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            min: 0,
+            max: 100,
+            ticks: {
+              color: '#4a90e2',
+              font: { size: 10 }
+            },
+            grid: {
+              drawOnChartArea: false
+            }
+          };
+          
+          profile2ChartInstance = new Chart(canvas2, config2);
+          
+          // Make canvas clickable
+          canvas2.style.cursor = 'pointer';
+          canvas2.addEventListener('click', function() {
+            toggleChartView(2);
+          });
+        }
+      }
+      
+      function toggleChartView(profileNumber) {
+        const canvas = profileNumber === 1 ? document.getElementById('profile1Chart') : document.getElementById('profile2Chart');
+        if (!canvas) return;
+        
+        const data = profileNumber === 1 ? profile1Data : profile2Data;
+        if (!data || data.dates.length === 0) return;
+        
+        let currentMode = profileNumber === 1 ? profile1ChartMode : profile2ChartMode;
+        let currentChart = profileNumber === 1 ? profile1ChartInstance : profile2ChartInstance;
+        
+        // Destroy existing chart
+        if (currentChart) {
+          currentChart.destroy();
+        }
+        
+        // Format dates for display
+        const labels = data.dates.map(date => {
+          const d = new Date(date + 'T00:00:00');
+          return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        });
+        
+        // Determine next mode and create chart
+        let nextMode;
+        let chartConfig;
+        
+        if (currentMode === 'combined') {
+          // Switch to RHR-only view
+          nextMode = 'rhr';
+          chartConfig = {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: 'Resting HR',
+                  data: data.rhr,
+                  borderColor: '#ff6b6b',
+                  backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                  tension: 0.4,
+                  fill: false,
+                  pointRadius: 3,
+                  pointHoverRadius: 5
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  labels: {
+                    color: '#9aa5c6',
+                    font: { size: 11 }
+                  }
+                },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false,
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  titleColor: '#ffffff',
+                  bodyColor: '#9aa5c6',
+                  borderColor: '#ffd700',
+                  borderWidth: 1
+                }
+              },
+              scales: {
+                x: {
+                  ticks: {
+                    color: '#9aa5c6',
+                    font: { size: 10 },
+                    maxRotation: 45,
+                    minRotation: 45
+                  },
+                  grid: {
+                    color: 'rgba(154, 165, 198, 0.1)'
+                  }
+                },
+                y: {
+                  beginAtZero: false,
+                  ticks: {
+                    color: '#9aa5c6',
+                    font: { size: 10 }
+                  },
+                  grid: {
+                    color: 'rgba(154, 165, 198, 0.1)'
+                  }
+                }
+              }
+            }
+          };
+        } else if (currentMode === 'rhr') {
+          // Switch to Steps-only view
+          nextMode = 'steps';
+          chartConfig = {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: 'Daily Steps',
+                  data: data.steps,
+                  borderColor: '#4CAF50',
+                  backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                  tension: 0.4,
+                  fill: false,
+                  pointRadius: 3,
+                  pointHoverRadius: 5
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  labels: {
+                    color: '#9aa5c6',
+                    font: { size: 11 }
+                  }
+                },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false,
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  titleColor: '#ffffff',
+                  bodyColor: '#9aa5c6',
+                  borderColor: '#ffd700',
+                  borderWidth: 1,
+                  callbacks: {
+                    label: function(context) {
+                      let label = context.dataset.label || '';
+                      if (label) {
+                        label += ': ';
+                      }
+                      if (context.parsed.y !== null) {
+                        label += context.parsed.y.toLocaleString();
+                      }
+                      return label;
+                    }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  ticks: {
+                    color: '#9aa5c6',
+                    font: { size: 10 },
+                    maxRotation: 45,
+                    minRotation: 45
+                  },
+                  grid: {
+                    color: 'rgba(154, 165, 198, 0.1)'
+                  }
+                },
+                y: {
+                  beginAtZero: true,
+                  ticks: {
+                    color: '#9aa5c6',
+                    font: { size: 10 },
+                    callback: function(value) {
+                      return value.toLocaleString();
+                    }
+                  },
+                  grid: {
+                    color: 'rgba(154, 165, 198, 0.1)'
+                  }
+                }
+              }
+            }
+          };
+        } else {
+          // Switch back to combined view
+          nextMode = 'combined';
+          chartConfig = {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: 'HRV (RMSSD)',
+                  data: data.hrv,
+                  borderColor: '#ffcc66',
+                  backgroundColor: 'rgba(255, 204, 102, 0.1)',
+                  tension: 0.4,
+                  fill: false,
+                  pointRadius: 3,
+                  pointHoverRadius: 5
+                },
+                {
+                  label: 'Sleep Score',
+                  data: data.sleep,
+                  borderColor: '#4a90e2',
+                  backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                  tension: 0.4,
+                  fill: false,
+                  pointRadius: 3,
+                  pointHoverRadius: 5,
+                  yAxisID: 'y1'
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'top',
+                  labels: {
+                    color: '#9aa5c6',
+                    font: { size: 11 }
+                  }
+                },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false,
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  titleColor: '#ffffff',
+                  bodyColor: '#9aa5c6',
+                  borderColor: '#ffd700',
+                  borderWidth: 1
+                }
+              },
+              scales: {
+                x: {
+                  ticks: {
+                    color: '#9aa5c6',
+                    font: { size: 10 },
+                    maxRotation: 45,
+                    minRotation: 45
+                  },
+                  grid: {
+                    color: 'rgba(154, 165, 198, 0.1)'
+                  }
+                },
+                y: {
+                  beginAtZero: false,
+                  ticks: {
+                    color: '#ffcc66',
+                    font: { size: 10 }
+                  },
+                  grid: {
+                    color: 'rgba(154, 165, 198, 0.1)'
+                  }
+                },
+                y1: {
+                  type: 'linear',
+                  display: true,
+                  position: 'right',
+                  min: 0,
+                  max: 100,
+                  ticks: {
+                    color: '#4a90e2',
+                    font: { size: 10 }
+                  },
+                  grid: {
+                    drawOnChartArea: false
+                  }
+                }
+              }
+            }
+          };
+        }
+        
+        // Create new chart and update state
+        const newChart = new Chart(canvas, chartConfig);
+        
+        if (profileNumber === 1) {
+          profile1ChartInstance = newChart;
+          profile1ChartMode = nextMode;
+        } else {
+          profile2ChartInstance = newChart;
+          profile2ChartMode = nextMode;
+        }
       }
 
       function renderCoupleSummary(a,b){
@@ -1962,6 +2512,9 @@
             updateWellnessAvatar(2, 50);
           }
 
+          // Render 7-day rolling charts for both profiles
+          render7DayCharts(p1, p2);
+          
           // Couple aggregation display (create on first run if missing)
           renderCoupleSummary(result1, result2);
           

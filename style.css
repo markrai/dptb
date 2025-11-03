@@ -2,7 +2,7 @@
 @media screen and (orientation: portrait) and (hover: hover) and (pointer: fine) {
   html, body {
     /* Non-standard but widely supported on desktop Chromium/Edge */
-    zoom: 1.2;
+    zoom: 1;
   }
 }
 
