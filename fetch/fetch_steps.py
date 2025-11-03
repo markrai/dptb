@@ -7,6 +7,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import sys
 import argparse
+import fcntl
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from auth.refresh_token import refresh_token
 from common.profile_paths import (
@@ -384,6 +385,18 @@ def fetch_activity_chunk(start_str, end_str, token):
     
     return steps_data, sedentary_data, token
 
+def _safe_csv_write(csv_path, dataframe):
+    """Write CSV file with file locking to prevent race conditions"""
+    lock_path = csv_path + '.lock'
+    try:
+        with open(lock_path, 'w') as lockfile:
+            fcntl.flock(lockfile.fileno(), fcntl.LOCK_EX)
+            dataframe.to_csv(csv_path, index=False)
+    except Exception as e:
+        print(f"Error writing CSV with lock: {e}")
+        raise
+
+
 def parse_activity_data(steps_data, sedentary_data):
     """Parse both steps and sedentary minutes data into a combined DataFrame"""
     rows = []
@@ -462,7 +475,7 @@ def main():
             initial_count = len(combined)
             combined = pd.concat([combined, df_p], ignore_index=True)
             combined = combined.drop_duplicates(subset=["date"]).sort_values("date")
-            combined.to_csv(CSV_FILE, index=False)
+            _safe_csv_write(CSV_FILE, combined)
             print(f"Saved activity to {CSV_FILE} up to {end_str}")
             final_count = len(combined)
             new_records = final_count - initial_count
@@ -490,7 +503,7 @@ def main():
         df["date"] = pd.to_datetime(df["date"])
         combined = pd.concat([combined, df], ignore_index=True)
         combined = combined.drop_duplicates(subset=["date"]).sort_values("date")
-        combined.to_csv(CSV_FILE, index=False)
+        _safe_csv_write(CSV_FILE, combined)
         print(f"Saved activity chunk to {CSV_FILE} up to {end_str}")
         successful_chunks += 1
         time.sleep(RATE_LIMIT_DELAY)

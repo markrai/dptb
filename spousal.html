@@ -504,13 +504,21 @@
         
         <!-- 7-Day Rolling Charts for Profile 1 and Profile 2 -->
         <div style="display:flex;gap:var(--gap);justify-content:center;margin-top:16px;">
-          <div style="flex:1;background:#1a2349;border-radius:12px;padding:var(--pad);position:relative;">
+          <div id="profile1ChartCard" style="flex:1;background:#1a2349;border-radius:12px;padding:var(--pad);position:relative;">
+            <!-- Card content wrapper -->
+            <div class="card-content">
             <h3 style="color:#ffffff;margin:0 0 12px 0;text-align:center;">Profile 1 - 7 Day Trend</h3>
             <canvas id="profile1Chart" style="max-height:250px;"></canvas>
+            </div>
           </div>
-          <div style="flex:1;background:#1a2349;border-radius:12px;padding:var(--pad);position:relative;">
+          <div id="profile2ChartCard" style="flex:1;background:#1a2349;border-radius:12px;padding:var(--pad);position:relative;">
+            <!-- Collapse button (controls both graphs) -->
+            <button class="card-collapse-btn" onclick="toggleBothGraphs(this)" style="position:absolute;top:8px;right:8px;background:none;border:none;color:#9aa5c6;cursor:pointer;font-size:12px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;z-index:10;padding:0;" title="Collapse/Expand Both Graphs">▼</button>
+            <!-- Card content wrapper -->
+            <div class="card-content">
             <h3 style="color:#ffffff;margin:0 0 12px 0;text-align:center;">Profile 2 - 7 Day Trend</h3>
             <canvas id="profile2Chart" style="max-height:250px;"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -1907,6 +1915,7 @@
 
       function renderCoupleSummary(a,b){
         let host = document.getElementById('coupleWellness');
+        let contentWrapper = null;
         if (!host){
           const container = document.createElement('div');
           container.id = 'coupleWellness';
@@ -1915,13 +1924,39 @@
           container.style.borderRadius = '12px';
           container.style.padding = '20px';
           container.style.textAlign = 'center';
+          container.style.position = 'relative';
+          // Add collapse button
+          const collapseBtn = document.createElement('button');
+          collapseBtn.className = 'card-collapse-btn';
+          collapseBtn.onclick = function() { toggleCardCollapse(this); };
+          collapseBtn.style.cssText = 'position:absolute;top:8px;right:8px;background:none;border:none;color:#9aa5c6;cursor:pointer;font-size:12px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;z-index:10;padding:0;';
+          collapseBtn.title = 'Collapse/Expand';
+          collapseBtn.textContent = '▼';
+          container.appendChild(collapseBtn);
+          // Add content wrapper
+          contentWrapper = document.createElement('div');
+          contentWrapper.className = 'card-content';
+          container.appendChild(contentWrapper);
           const parent = document.getElementById('spousalSignalsView');
           parent.appendChild(container);
           host = container;
+        } else {
+          contentWrapper = host.querySelector('.card-content');
+          if (!contentWrapper) {
+            contentWrapper = document.createElement('div');
+            contentWrapper.className = 'card-content';
+            // Move existing content into wrapper
+            while (host.firstChild && host.firstChild.className !== 'card-collapse-btn') {
+              const child = host.firstChild;
+              host.removeChild(child);
+              contentWrapper.appendChild(child);
+            }
+            host.appendChild(contentWrapper);
+          }
         }
         const agg = coupleAggregate(a,b);
         if (!agg){ 
-          host.innerHTML = `
+          contentWrapper.innerHTML = `
             <div id="coupleWellnessValue" style="font-size:28px;font-weight:bold;color:#9aa5c6;margin:10px 0;">--</div>
             <div style="font-size:12px;color:#9aa5c6;">Couple Wellness</div>
           `;
@@ -1931,7 +1966,7 @@
         const color = getBandColor(agg.score);
         const mobileLike = isMobileLikeViewport();
         const conf = agg.label ? (mobileLike ? ` ${agg.label}` : ` <span class="conf-dot">&#8226;</span> ${agg.label}`) : '';
-        host.innerHTML = `
+        contentWrapper.innerHTML = `
           <div id="coupleWellnessValue" style="font-size:28px;font-weight:bold;color:${color};margin:10px 0;">${Math.round(agg.score)} (${lbl})</div>
           <div style="font-size:12px;color:#9aa5c6;">Couple Wellness${conf}</div>
         `;
@@ -1987,6 +2022,7 @@
        // Joint Burnout Risk Card - Full Implementation
        function renderJointBurnoutCard(result1, result2) {
          let host = document.getElementById('jointBurnoutCard');
+         let contentWrapper = null;
          if (!host) {
            const container = document.createElement('div');
            container.id = 'jointBurnoutCard';
@@ -1995,14 +2031,40 @@
            container.style.borderRadius = '12px';
            container.style.padding = '20px';
            container.style.textAlign = 'center';
+           container.style.position = 'relative';
+           // Add collapse button
+           const collapseBtn = document.createElement('button');
+           collapseBtn.className = 'card-collapse-btn';
+           collapseBtn.onclick = function() { toggleCardCollapse(this); };
+           collapseBtn.style.cssText = 'position:absolute;top:8px;right:8px;background:none;border:none;color:#9aa5c6;cursor:pointer;font-size:12px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;z-index:10;padding:0;';
+           collapseBtn.title = 'Collapse/Expand';
+           collapseBtn.textContent = '▼';
+           container.appendChild(collapseBtn);
+           // Add content wrapper
+           contentWrapper = document.createElement('div');
+           contentWrapper.className = 'card-content';
+           container.appendChild(contentWrapper);
            const parent = document.getElementById('spousalSignalsView');
            parent.appendChild(container);
            host = container;
+         } else {
+           contentWrapper = host.querySelector('.card-content');
+           if (!contentWrapper) {
+             contentWrapper = document.createElement('div');
+             contentWrapper.className = 'card-content';
+             // Move existing content into wrapper
+             while (host.firstChild && host.firstChild.className !== 'card-collapse-btn') {
+               const child = host.firstChild;
+               host.removeChild(child);
+               contentWrapper.appendChild(child);
+             }
+             host.appendChild(contentWrapper);
+           }
          }
 
          // If either profile is missing, show placeholder
          if (!result1 || !result2) {
-           host.innerHTML = `
+           contentWrapper.innerHTML = `
              <div id="jointBurnoutValue" style="font-size:28px;font-weight:bold;color:#9aa5c6;margin:10px 0;">--</div>
              <div style="font-size:12px;color:#9aa5c6;">Joint Burnout Risk</div>
              <div style="font-size:10px;color:#9aa5c6;margin-top:8px;font-style:italic;">Insufficient data</div>
@@ -2032,7 +2094,7 @@
            
            if (!hasEnoughData) {
              // Not enough data - show placeholder
-             host.innerHTML = `
+             contentWrapper.innerHTML = `
                <div id="jointBurnoutValue" style="font-size:28px;font-weight:bold;color:#9aa5c6;margin:10px 0;">--</div>
                <div style="font-size:12px;color:#9aa5c6;">Joint Burnout Risk</div>
                <div style="font-size:10px;color:#9aa5c6;margin-top:8px;font-style:italic;">Insufficient data for analysis</div>
@@ -2056,7 +2118,7 @@
            }
            
            // Update card
-           host.innerHTML = `
+           contentWrapper.innerHTML = `
              <div id="jointBurnoutValue" style="font-size:28px;font-weight:bold;color:${riskColor};margin:10px 0;">${riskLevel}</div>
              <div style="font-size:12px;color:#9aa5c6;">Joint Burnout Risk</div>
              <div style="font-size:10px;color:#9aa5c6;margin-top:8px;font-style:italic;">${burnoutText}</div>
@@ -2064,13 +2126,79 @@
            
          } catch (error) {
            // Fallback on error
-           host.innerHTML = `
+           contentWrapper.innerHTML = `
              <div id="jointBurnoutValue" style="font-size:28px;font-weight:bold;color:#9aa5c6;margin:10px 0;">--</div>
              <div style="font-size:12px;color:#9aa5c6;">Joint Burnout Risk</div>
              <div style="font-size:10px;color:#9aa5c6;margin-top:8px;font-style:italic;">Unable to calculate</div>
            `;
          }
        }
+
+      // Card collapse/expand functionality
+      function toggleCardCollapse(button) {
+        // Find the card container - check for specific IDs first to avoid matching graph cards
+        // The button should be a direct child or within the card we want to collapse
+        let card = button.parentElement;
+        
+        // Verify it's one of our target cards by checking for the ID or if it contains a .card-content
+        if (!card || (!card.id && !card.querySelector('.card-content'))) {
+          // Fallback: try to find by ID if button is nested deeper
+          card = button.closest('#coupleWellness, #jointBurnoutCard');
+          if (!card) {
+            // Last resort: find closest element with card-content
+            card = button.closest('[style*="background:#1a2349"]');
+            // But exclude graph cards
+            if (card && (card.id === 'profile1ChartCard' || card.id === 'profile2ChartCard')) {
+              return; // Don't handle graph cards here - they use toggleBothGraphs
+            }
+          }
+        }
+        
+        if (!card) return;
+        
+        const contentWrapper = card.querySelector('.card-content');
+        if (!contentWrapper) return;
+        
+        const isCollapsed = contentWrapper.style.display === 'none';
+        
+        if (isCollapsed) {
+          // Expand
+          contentWrapper.style.display = '';
+          button.textContent = '▼';
+        } else {
+          // Collapse
+          contentWrapper.style.display = 'none';
+          button.textContent = '▶';
+        }
+      }
+
+      // Toggle both graph cards (Profile 1 and Profile 2)
+      function toggleBothGraphs(button) {
+        const profile1Card = document.getElementById('profile1ChartCard');
+        const profile2Card = document.getElementById('profile2ChartCard');
+        
+        if (!profile1Card || !profile2Card) return;
+        
+        const profile1Content = profile1Card.querySelector('.card-content');
+        const profile2Content = profile2Card.querySelector('.card-content');
+        
+        if (!profile1Content || !profile2Content) return;
+        
+        // Check if either is collapsed to determine the state
+        const isCollapsed = profile1Content.style.display === 'none' || profile2Content.style.display === 'none';
+        
+        if (isCollapsed) {
+          // Expand both
+          profile1Content.style.display = '';
+          profile2Content.style.display = '';
+          button.textContent = '▼';
+        } else {
+          // Collapse both
+          profile1Content.style.display = 'none';
+          profile2Content.style.display = 'none';
+          button.textContent = '▶';
+        }
+      }
 
     // Global avatar management functions
     function changeAvatar(profileId) {

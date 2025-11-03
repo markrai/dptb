@@ -21,5 +21,8 @@ services:
     # volumes:
     #   - ./certs:/certs:ro   # If using background OAuth with local HTTPS
     restart: unless-stopped
+    # Prevent scaling to avoid race conditions with shared file system
+    deploy:
+      replicas: 1
     # Remove stdin_open and tty for production
     # To access the container for setup, use: docker exec -it fitbaus-app bash

@@ -8,6 +8,7 @@ import sys
 import warnings
 import subprocess
 import argparse
+import fcntl
 
 # Suppress specific pandas FutureWarnings
 warnings.filterwarnings('ignore', category=FutureWarning)
@@ -268,6 +269,18 @@ def clamp(v, lo=0.0, hi=100.0):
     return max(lo, min(hi, v))
 
 
+def _safe_csv_write(csv_path, dataframe):
+    """Write CSV file with file locking to prevent race conditions"""
+    lock_path = csv_path + '.lock'
+    try:
+        with open(lock_path, 'w') as lockfile:
+            fcntl.flock(lockfile.fileno(), fcntl.LOCK_EX)
+            dataframe.to_csv(csv_path, index=False)
+    except Exception as e:
+        print(f"Error writing CSV with lock: {e}")
+        raise
+
+
 def compute_sleep_score(row, goal_minutes):
     try:
         ma = row.get("minutesAsleep") or 0
@@ -397,7 +410,7 @@ def main():
                     # Fallback for older pandas versions
                     combined = pd.concat([combined, df], ignore_index=True)
         combined = combined.sort_values(["date", "isMainSleep"], ascending=[True, False])
-        combined.to_csv(CSV_FILE, index=False)
+        _safe_csv_write(CSV_FILE, combined)
         print(f"Saved chunk to {CSV_FILE} up to {end_str}")
         successful_chunks += 1
         time.sleep(RATE_LIMIT_DELAY)

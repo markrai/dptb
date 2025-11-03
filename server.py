@@ -68,6 +68,7 @@ def check_fetch_jobs_reassignment():
 # Track running fetch subprocesses by job_id for cancellation
 fetch_procs = {}
 job_counter = 0
+job_counter_lock = threading.Lock()
 
 # Global state for tracking authorization operations
 auth_jobs = {}
@@ -768,9 +769,16 @@ def fetch_data():
     data = request.get_json() or {}
     profile_id = data.get('profile', None)
     
-    # Create new job
-    job_counter += 1
-    job_id = str(job_counter)
+    # Check if profile already has a running/queued job
+    if profile_id:
+        for jid, job in fetch_jobs.items():
+            if job.get('profile') == profile_id and job.get('status') in ('queued', 'running'):
+                return jsonify({'error': f'Fetch already running for profile {profile_id}'}), 409
+    
+    # Create new job with thread-safe counter
+    with job_counter_lock:
+        job_counter += 1
+        job_id = str(job_counter)
     
     print(f"[DEBUG] Creating job {job_id} for profile {profile_id}")
     print(f"[DEBUG] Current fetch_jobs keys: {list(fetch_jobs.keys())}")

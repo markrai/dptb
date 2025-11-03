@@ -7,6 +7,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import sys
 import argparse
+import fcntl
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from auth.refresh_token import refresh_token
@@ -224,6 +225,18 @@ def fetch_resting_hr_chunk(start_str, end_str, token):
             return None, token
     return None, token
 
+def _safe_csv_write(csv_path, dataframe):
+    """Write CSV file with file locking to prevent race conditions"""
+    lock_path = csv_path + '.lock'
+    try:
+        with open(lock_path, 'w') as lockfile:
+            fcntl.flock(lockfile.fileno(), fcntl.LOCK_EX)
+            dataframe.to_csv(csv_path, index=False)
+    except Exception as e:
+        print(f"Error writing CSV with lock: {e}")
+        raise
+
+
 def parse_resting_hr(json_data):
     if not json_data or "activities-heart" not in json_data:
         return pd.DataFrame()
@@ -322,7 +335,7 @@ def main():
         df["date"] = pd.to_datetime(df["date"])
         combined = pd.concat([combined, df], ignore_index=True)
         combined = combined.drop_duplicates(subset=["date"]).sort_values("date")
-        combined.to_csv(CSV_FILE, index=False)
+        _safe_csv_write(CSV_FILE, combined)
         print(f"Saved chunk to {CSV_FILE} up to {end_str}")
         successful_chunks += 1
         time.sleep(RATE_LIMIT_DELAY)
