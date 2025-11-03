@@ -1,3 +1,11 @@
+/* Desktop portrait-only scaling: increase viewport to 150% */
+@media screen and (orientation: portrait) and (hover: hover) and (pointer: fine) {
+  html, body {
+    /* Non-standard but widely supported on desktop Chromium/Edge */
+    zoom: 1.2;
+  }
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Racing+Sans+One&display=swap');
 body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;background:#0b1020;color:#e6eaf3;position:relative}
 /* Remove any legacy vertical logo */

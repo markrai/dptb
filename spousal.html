@@ -1726,18 +1726,13 @@
          profileNumber = 1;
        }
        
-       // Get current wellness score to determine which wellness avatar to show
-       const wellnessElement = document.getElementById(profileNumber === 1 ? 'profile1Wellness' : 'profile2Wellness');
-       let wellnessScore = 50; // Default middle score
-       
-       if (wellnessElement && wellnessElement.textContent !== '--') {
-         // Extract numeric score from the wellness display
-         const scoreText = wellnessElement.textContent;
-         const match = scoreText.match(/(\d+)/);
-         if (match) {
-           wellnessScore = parseInt(match[1]);
-         }
-       }
+      // Use last known numeric wellness score when available; fallback to default 50
+      let wellnessScore = 50; // Default middle score
+      if (profileNumber === 1 && Number.isFinite(lastWellnessScore1)) {
+        wellnessScore = lastWellnessScore1;
+      } else if (profileNumber === 2 && Number.isFinite(lastWellnessScore2)) {
+        wellnessScore = lastWellnessScore2;
+      }
        
        // Update to wellness-based avatar
        updateWellnessAvatar(profileNumber, wellnessScore);
@@ -1872,7 +1867,13 @@
        }
      }
 
-      // Global function for loading spousal HRV data
+     // Track wellness availability and last numeric scores to avoid incorrect avatar overrides
+     let hasRealWellness1 = false;
+     let hasRealWellness2 = false;
+     let lastWellnessScore1 = null;
+     let lastWellnessScore2 = null;
+
+     // Global function for loading spousal HRV data
       async function loadSpousalHRVData() {
        try {
          const { profileIds, labels } = getFirstTwoProfiles();
@@ -1920,7 +1921,11 @@
             
             // Update wellness-based avatar for profile 1
             if (Number.isFinite(result1.metaFinal)) {
+              hasRealWellness1 = true;
+              lastWellnessScore1 = result1.metaFinal;
               updateWellnessAvatar(1, result1.metaFinal, !user1UpToDate);
+            } else {
+              hasRealWellness1 = false;
             }
           } else {
             p1HRV.textContent = '--';
@@ -1928,6 +1933,7 @@
             p1Well.textContent = '--';
             
             // No wellness data available, use default wellness avatar (middle score)
+            hasRealWellness1 = false;
             updateWellnessAvatar(1, 50);
           }
 
@@ -1940,7 +1946,11 @@
             
             // Update wellness-based avatar for profile 2
             if (Number.isFinite(result2.metaFinal)) {
+              hasRealWellness2 = true;
+              lastWellnessScore2 = result2.metaFinal;
               updateWellnessAvatar(2, result2.metaFinal, !user2UpToDate);
+            } else {
+              hasRealWellness2 = false;
             }
           } else {
             p2HRV.textContent = '--';
@@ -1948,6 +1958,7 @@
             p2Well.textContent = '--';
             
             // No wellness data available, use default wellness avatar (middle score)
+            hasRealWellness2 = false;
             updateWellnessAvatar(2, 50);
           }
 
@@ -2281,16 +2292,16 @@
       // Load spousal data immediately
       loadSpousalHRVData();
       
-      // Force wellness avatars immediately (in case wellness data is not available)
+      // Force default wellness avatars only if no real score has been applied yet
       setTimeout(() => {
-        updateWellnessAvatar(1, 50); // Default middle score
-        updateWellnessAvatar(2, 50); // Default middle score
+        if (!hasRealWellness1) updateWellnessAvatar(1, 50); // Default middle score
+        if (!hasRealWellness2) updateWellnessAvatar(2, 50); // Default middle score
       }, 500);
       
-      // Also try again after a longer delay in case the first attempt failed
+      // Retry once more later, still guarded by wellness availability flags
       setTimeout(() => {
-        updateWellnessAvatar(1, 50);
-        updateWellnessAvatar(2, 50);
+        if (!hasRealWellness1) updateWellnessAvatar(1, 50);
+        if (!hasRealWellness2) updateWellnessAvatar(2, 50);
       }, 2000);
        
        // Auto-refresh every 24 hours
