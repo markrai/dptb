@@ -455,69 +455,73 @@
       
        <!-- Spousal Signals View -->
        <div id="spousalSignalsView" style="display:block;">
-        <div style="display:flex;gap:var(--gap);justify-content:center;">
-          <div style="flex:1;background:#1a2349;border-radius:12px;padding:var(--pad);display:flex;gap:var(--gap);position:relative;">
-            <!-- Data section on the left -->
-            <div style="flex:0 0 200px;text-align:center;">
-              <h3 style="color:#ffffff;margin:0 0 10px 0;">Profile 1</h3>
-              <div style="margin-bottom:var(--pad);">
-                <div id="profile1HRV" style="font-size:var(--font-lg);font-weight:bold;color:#ffcc66;margin:10px 0;">--</div>
-                <div style="font-size:var(--font-sm);color:#9aa5c6;">Heart Rate Variability</div>
+        <!-- Main container for both profiles - side by side in landscape, stacked in portrait -->
+        <div id="profilesMainContainer" style="display:flex;gap:var(--gap);justify-content:center;">
+          <!-- Profile 1 Section: Card + Graph grouped together -->
+          <div id="profile1Section" style="flex:1;display:flex;flex-direction:column;gap:16px;">
+            <div id="profile1Card" style="background:#1a2349;border-radius:12px;padding:var(--pad);display:flex;gap:var(--gap);position:relative;">
+              <!-- Data section on the left -->
+              <div style="flex:0 0 200px;text-align:center;">
+                <h3 style="color:#ffffff;margin:0 0 10px 0;">Profile 1</h3>
+                <div style="margin-bottom:var(--pad);">
+                  <div id="profile1HRV" style="font-size:var(--font-lg);font-weight:bold;color:#ffcc66;margin:10px 0;">--</div>
+                  <div style="font-size:var(--font-sm);color:#9aa5c6;">Heart Rate Variability</div>
+                </div>
+                <div>
+                  <div id="profile1Sleep" style="font-size:var(--font-lg);font-weight:bold;color:#4a90e2;margin:10px 0;">--</div>
+                  <div style="font-size:var(--font-sm);color:#9aa5c6;">Sleep Score</div>
+                </div>
+                <div style="margin-top:var(--gap);">
+                  <div id="profile1Wellness" style="font-size:calc(var(--font-lg) - 4px);font-weight:bold;color:#4CAF50;margin:10px 0;">--</div>
+                  <div style="font-size:var(--font-sm);color:#9aa5c6;">Wellness Score</div>
+                </div>
               </div>
-              <div>
-                <div id="profile1Sleep" style="font-size:var(--font-lg);font-weight:bold;color:#4a90e2;margin:10px 0;">--</div>
-                <div style="font-size:var(--font-sm);color:#9aa5c6;">Sleep Score</div>
-              </div>
-              <div style="margin-top:var(--gap);">
-                <div id="profile1Wellness" style="font-size:calc(var(--font-lg) - 4px);font-weight:bold;color:#4CAF50;margin:10px 0;">--</div>
-                <div style="font-size:var(--font-sm);color:#9aa5c6;">Wellness Score</div>
-              </div>
-            </div>
-            <!-- Image section on the right -->
-            <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-              <img id="husbandImage" src="assets/husband/1.png" alt="image #1" style="height:var(--img-h);width:calc(var(--img-h) * 1.035);object-fit:contain;cursor:pointer;" title="Select profiles" onerror="console.error('❌ Initial husband wellness image failed to load:', this.src)">
-            </div>
-          </div>
-          <div style="flex:1;background:#1a2349;border-radius:12px;padding:var(--pad);display:flex;gap:var(--gap);position:relative;">
-            <!-- Data section on the left -->
-            <div style="flex:0 0 200px;text-align:center;">
-              <h3 style="color:#ffffff;margin:0 0 10px 0;">Profile 2</h3>
-              <div style="margin-bottom:var(--pad);">
-                <div id="profile2HRV" style="font-size:var(--font-lg);font-weight:bold;color:#ffcc66;margin:10px 0;">--</div>
-                <div style="font-size:var(--font-sm);color:#9aa5c6;">Heart Rate Variability</div>
-              </div>
-              <div>
-                <div id="profile2Sleep" style="font-size:var(--font-lg);font-weight:bold;color:#4a90e2;margin:10px 0;">--</div>
-                <div style="font-size:var(--font-sm);color:#9aa5c6;">Sleep Score</div>
-              </div>
-              <div style="margin-top:var(--gap);">
-                <div id="profile2Wellness" style="font-size:calc(var(--font-lg) - 4px);font-weight:bold;color:#4CAF50;margin:10px 0;">--</div>
-                <div style="font-size:var(--font-sm);color:#9aa5c6;">Wellness Score</div>
+              <!-- Image section on the right -->
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+                <img id="husbandImage" src="assets/husband/1.png" alt="image #1" style="height:var(--img-h);width:calc(var(--img-h) * 1.035);object-fit:contain;cursor:pointer;" title="Select profiles" onerror="console.error('❌ Initial husband wellness image failed to load:', this.src)">
               </div>
             </div>
-            <!-- Image section on the right -->
-            <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-              <img id="wifeImage" src="assets/wife/1.png" alt="image #1" style="height:var(--img-h);width:calc(var(--img-h) * 1.035);object-fit:contain;cursor:pointer;" title="Select profiles" onerror="console.error('❌ Initial wife wellness image failed to load:', this.src)">
+            <div id="profile1ChartCard" style="background:#1a2349;border-radius:12px;padding:var(--pad);position:relative;">
+              <!-- Card content wrapper -->
+              <div class="card-content">
+              <h3 style="color:#ffffff;margin:0 0 12px 0;text-align:center;">Profile 1 - 7 Day Trend</h3>
+              <canvas id="profile1Chart" style="max-height:250px;"></canvas>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <!-- 7-Day Rolling Charts for Profile 1 and Profile 2 -->
-        <div style="display:flex;gap:var(--gap);justify-content:center;margin-top:16px;">
-          <div id="profile1ChartCard" style="flex:1;background:#1a2349;border-radius:12px;padding:var(--pad);position:relative;">
-            <!-- Card content wrapper -->
-            <div class="card-content">
-            <h3 style="color:#ffffff;margin:0 0 12px 0;text-align:center;">Profile 1 - 7 Day Trend</h3>
-            <canvas id="profile1Chart" style="max-height:250px;"></canvas>
+          
+          <!-- Profile 2 Section: Card + Graph grouped together -->
+          <div id="profile2Section" style="flex:1;display:flex;flex-direction:column;gap:16px;">
+            <div id="profile2Card" style="background:#1a2349;border-radius:12px;padding:var(--pad);display:flex;gap:var(--gap);position:relative;">
+              <!-- Data section on the left -->
+              <div style="flex:0 0 200px;text-align:center;">
+                <h3 style="color:#ffffff;margin:0 0 10px 0;">Profile 2</h3>
+                <div style="margin-bottom:var(--pad);">
+                  <div id="profile2HRV" style="font-size:var(--font-lg);font-weight:bold;color:#ffcc66;margin:10px 0;">--</div>
+                  <div style="font-size:var(--font-sm);color:#9aa5c6;">Heart Rate Variability</div>
+                </div>
+                <div>
+                  <div id="profile2Sleep" style="font-size:var(--font-lg);font-weight:bold;color:#4a90e2;margin:10px 0;">--</div>
+                  <div style="font-size:var(--font-sm);color:#9aa5c6;">Sleep Score</div>
+                </div>
+                <div style="margin-top:var(--gap);">
+                  <div id="profile2Wellness" style="font-size:calc(var(--font-lg) - 4px);font-weight:bold;color:#4CAF50;margin:10px 0;">--</div>
+                  <div style="font-size:var(--font-sm);color:#9aa5c6;">Wellness Score</div>
+                </div>
+              </div>
+              <!-- Image section on the right -->
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+                <img id="wifeImage" src="assets/wife/1.png" alt="image #1" style="height:var(--img-h);width:calc(var(--img-h) * 1.035);object-fit:contain;cursor:pointer;" title="Select profiles" onerror="console.error('❌ Initial wife wellness image failed to load:', this.src)">
+              </div>
             </div>
-          </div>
-          <div id="profile2ChartCard" style="flex:1;background:#1a2349;border-radius:12px;padding:var(--pad);position:relative;">
-            <!-- Collapse button (controls both graphs) -->
-            <button class="card-collapse-btn" onclick="toggleBothGraphs(this)" style="position:absolute;top:8px;right:8px;background:none;border:none;color:#9aa5c6;cursor:pointer;font-size:12px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;z-index:10;padding:0;" title="Collapse/Expand Both Graphs">▼</button>
-            <!-- Card content wrapper -->
-            <div class="card-content">
-            <h3 style="color:#ffffff;margin:0 0 12px 0;text-align:center;">Profile 2 - 7 Day Trend</h3>
-            <canvas id="profile2Chart" style="max-height:250px;"></canvas>
+            <div id="profile2ChartCard" style="background:#1a2349;border-radius:12px;padding:var(--pad);position:relative;">
+              <!-- Collapse button (controls both graphs) -->
+              <button class="card-collapse-btn" onclick="toggleBothGraphs(this)" style="position:absolute;top:8px;right:8px;background:none;border:none;color:#9aa5c6;cursor:pointer;font-size:12px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;z-index:10;padding:0;" title="Collapse/Expand Both Graphs">▼</button>
+              <!-- Card content wrapper -->
+              <div class="card-content">
+              <h3 style="color:#ffffff;margin:0 0 12px 0;text-align:center;">Profile 2 - 7 Day Trend</h3>
+              <canvas id="profile2Chart" style="max-height:250px;"></canvas>
+              </div>
             </div>
           </div>
         </div>
