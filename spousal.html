@@ -8,11 +8,43 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Racing+Sans+One&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@latest/dist/chartjs-chart-matrix.min.js"></script>
-  <link rel="stylesheet" href="style.css">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'dark-bg': '#0b1020',
+            'dark-card': '#111735',
+            'dark-card-alt': '#1a2349',
+            'dark-border': '#1a2349',
+            'dark-border-alt': '#263266',
+            'text-primary': '#e6eaf3',
+            'text-secondary': '#a9b3d8',
+            'text-muted': '#9aa5c6',
+            'accent-blue': '#4a90e2',
+            'accent-yellow': '#ffcc66',
+            'accent-green': '#4CAF50',
+            'accent-red': '#ff6b6b',
+            'success': '#7bffbf',
+            'error': '#ff9b9b',
+          },
+          fontFamily: {
+            'sans': ['Inter', 'system-ui', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+            'racing': ['Racing Sans One', 'cursive'],
+          },
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="tailwind-custom.css">
+  <link rel="stylesheet" href="style-tailwind.css">
   <style>
     /* Responsive variables */
     :root{
@@ -94,12 +126,27 @@
       }
     }
     
-    /* Mobile Portrait Mode - Side by side cards */
+    /* Mobile Portrait Mode - Stacked cards */
     @media screen and (max-width: 768px) and (orientation: portrait) {
       .wrap { padding: 8px !important; }
       
+      /* Force vertical stacking on mobile */
+      #profilesMainContainer {
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+      }
+      
+      #profile1Section,
+      #profile2Section {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+      }
+      
       #spousalSignalsView > div {
-        flex-direction: row !important;
+        flex-direction: column !important; /* Changed from row to column */
         gap: 8px !important;
       }
       
@@ -396,8 +443,8 @@
     }
   </style>
 </head>
-<body>
-  <div class="wrap">
+<body class="font-sans m-0 bg-dark-bg text-primary relative min-h-screen">
+  <div class="wrap max-w-[1100px] mx-auto my-3 px-4">
     <!-- Hamburger Menu - Desktop Only -->
     <div id="hamburgerMenu" style="position:fixed;top:20px;right:20px;z-index:1000;display:none;">
       <button id="hamburgerBtn" style="background:none;border:none;cursor:pointer;" title="Menu">
@@ -444,9 +491,9 @@
       </div>
     </div>
     
-    <div class="card" style="padding:16px;position:relative;">
+    <div class="card p-4 relative">
       <!-- Hidden stubs so mobile.html JS works -->
-      <div style="display:none;">
+      <div class="hidden">
         <select id="profileSelect">
           <option value="ammar">Ammar</option>
           <option value="nour">Nour</option>
@@ -454,73 +501,73 @@
       </div>
       
        <!-- Spousal Signals View -->
-       <div id="spousalSignalsView" style="display:block;">
+       <div id="spousalSignalsView" class="block">
         <!-- Main container for both profiles - side by side in landscape, stacked in portrait -->
-        <div id="profilesMainContainer" style="display:flex;gap:var(--gap);justify-content:center;">
+        <div id="profilesMainContainer" class="flex gap-4 justify-center">
           <!-- Profile 1 Section: Card + Graph grouped together -->
-          <div id="profile1Section" style="flex:1;display:flex;flex-direction:column;gap:16px;">
-            <div id="profile1Card" style="background:#1a2349;border-radius:12px;padding:var(--pad);display:flex;gap:var(--gap);position:relative;">
+          <div id="profile1Section" class="flex-1 flex flex-col gap-4">
+            <div id="profile1Card" class="bg-dark-card-alt rounded-xl p-5 flex gap-4 relative">
               <!-- Data section on the left -->
-              <div style="flex:0 0 200px;text-align:center;">
-                <h3 style="color:#ffffff;margin:0 0 10px 0;">Profile 1</h3>
-                <div style="margin-bottom:var(--pad);">
-                  <div id="profile1HRV" style="font-size:var(--font-lg);font-weight:bold;color:#ffcc66;margin:10px 0;">--</div>
-                  <div style="font-size:var(--font-sm);color:#9aa5c6;">Heart Rate Variability</div>
+              <div class="flex-[0_0_200px] text-center">
+                <h3 class="text-white m-0 mb-2.5">Profile 1</h3>
+                <div class="mb-5">
+                  <div id="profile1HRV" class="text-[var(--font-lg)] font-bold text-accent-yellow my-2.5">--</div>
+                  <div class="text-[var(--font-sm)] text-muted">Heart Rate Variability</div>
                 </div>
                 <div>
-                  <div id="profile1Sleep" style="font-size:var(--font-lg);font-weight:bold;color:#4a90e2;margin:10px 0;">--</div>
-                  <div style="font-size:var(--font-sm);color:#9aa5c6;">Sleep Score</div>
+                  <div id="profile1Sleep" class="text-[var(--font-lg)] font-bold text-accent-blue my-2.5">--</div>
+                  <div class="text-[var(--font-sm)] text-muted">Sleep Score</div>
                 </div>
-                <div style="margin-top:var(--gap);">
-                  <div id="profile1Wellness" style="font-size:calc(var(--font-lg) - 4px);font-weight:bold;color:#4CAF50;margin:10px 0;">--</div>
-                  <div style="font-size:var(--font-sm);color:#9aa5c6;">Wellness Score</div>
+                <div class="mt-4">
+                  <div id="profile1Wellness" class="text-[calc(var(--font-lg)-4px)] font-bold text-accent-green my-2.5">--</div>
+                  <div class="text-[var(--font-sm)] text-muted">Wellness Score</div>
                 </div>
               </div>
               <!-- Image section on the right -->
-              <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-                <img id="husbandImage" src="assets/husband/1.png" alt="image #1" style="height:var(--img-h);width:calc(var(--img-h) * 1.035);object-fit:contain;cursor:pointer;" title="Select profiles" onerror="console.error('❌ Initial husband wellness image failed to load:', this.src)">
+              <div class="flex-1 flex items-center justify-center">
+                <img id="husbandImage" src="assets/husband/1.png" alt="image #1" class="h-[var(--img-h)] w-[calc(var(--img-h)*1.035)] object-contain cursor-pointer" title="Select profiles" onerror="console.error('❌ Initial husband wellness image failed to load:', this.src)">
               </div>
             </div>
-            <div id="profile1ChartCard" style="background:#1a2349;border-radius:12px;padding:var(--pad);position:relative;">
+            <div id="profile1ChartCard" class="bg-dark-card-alt rounded-xl p-5 relative">
               <!-- Card content wrapper -->
               <div class="card-content">
-              <h3 style="color:#ffffff;margin:0 0 12px 0;text-align:center;">Profile 1 - 7 Day Trend</h3>
-              <canvas id="profile1Chart" style="max-height:250px;"></canvas>
+              <h3 class="text-white m-0 mb-3 text-center">Profile 1 - 7 Day Trend</h3>
+              <canvas id="profile1Chart" class="max-h-[250px]"></canvas>
               </div>
             </div>
           </div>
           
           <!-- Profile 2 Section: Card + Graph grouped together -->
-          <div id="profile2Section" style="flex:1;display:flex;flex-direction:column;gap:16px;">
-            <div id="profile2Card" style="background:#1a2349;border-radius:12px;padding:var(--pad);display:flex;gap:var(--gap);position:relative;">
+          <div id="profile2Section" class="flex-1 flex flex-col gap-4">
+            <div id="profile2Card" class="bg-dark-card-alt rounded-xl p-5 flex gap-4 relative">
               <!-- Data section on the left -->
-              <div style="flex:0 0 200px;text-align:center;">
-                <h3 style="color:#ffffff;margin:0 0 10px 0;">Profile 2</h3>
-                <div style="margin-bottom:var(--pad);">
-                  <div id="profile2HRV" style="font-size:var(--font-lg);font-weight:bold;color:#ffcc66;margin:10px 0;">--</div>
-                  <div style="font-size:var(--font-sm);color:#9aa5c6;">Heart Rate Variability</div>
+              <div class="flex-[0_0_200px] text-center">
+                <h3 class="text-white m-0 mb-2.5">Profile 2</h3>
+                <div class="mb-5">
+                  <div id="profile2HRV" class="text-[var(--font-lg)] font-bold text-accent-yellow my-2.5">--</div>
+                  <div class="text-[var(--font-sm)] text-muted">Heart Rate Variability</div>
                 </div>
                 <div>
-                  <div id="profile2Sleep" style="font-size:var(--font-lg);font-weight:bold;color:#4a90e2;margin:10px 0;">--</div>
-                  <div style="font-size:var(--font-sm);color:#9aa5c6;">Sleep Score</div>
+                  <div id="profile2Sleep" class="text-[var(--font-lg)] font-bold text-accent-blue my-2.5">--</div>
+                  <div class="text-[var(--font-sm)] text-muted">Sleep Score</div>
                 </div>
-                <div style="margin-top:var(--gap);">
-                  <div id="profile2Wellness" style="font-size:calc(var(--font-lg) - 4px);font-weight:bold;color:#4CAF50;margin:10px 0;">--</div>
-                  <div style="font-size:var(--font-sm);color:#9aa5c6;">Wellness Score</div>
+                <div class="mt-4">
+                  <div id="profile2Wellness" class="text-[calc(var(--font-lg)-4px)] font-bold text-accent-green my-2.5">--</div>
+                  <div class="text-[var(--font-sm)] text-muted">Wellness Score</div>
                 </div>
               </div>
               <!-- Image section on the right -->
-              <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-                <img id="wifeImage" src="assets/wife/1.png" alt="image #1" style="height:var(--img-h);width:calc(var(--img-h) * 1.035);object-fit:contain;cursor:pointer;" title="Select profiles" onerror="console.error('❌ Initial wife wellness image failed to load:', this.src)">
+              <div class="flex-1 flex items-center justify-center">
+                <img id="wifeImage" src="assets/wife/1.png" alt="image #1" class="h-[var(--img-h)] w-[calc(var(--img-h)*1.035)] object-contain cursor-pointer" title="Select profiles" onerror="console.error('❌ Initial wife wellness image failed to load:', this.src)">
               </div>
             </div>
-            <div id="profile2ChartCard" style="background:#1a2349;border-radius:12px;padding:var(--pad);position:relative;">
+            <div id="profile2ChartCard" class="bg-dark-card-alt rounded-xl p-5 relative">
               <!-- Collapse button (controls both graphs) -->
-              <button class="card-collapse-btn" onclick="toggleBothGraphs(this)" style="position:absolute;top:8px;right:8px;background:none;border:none;color:#9aa5c6;cursor:pointer;font-size:12px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;z-index:10;padding:0;" title="Collapse/Expand Both Graphs">▼</button>
+              <button class="card-collapse-btn absolute top-2 right-2 bg-transparent border-none cursor-pointer text-xs w-5 h-5 flex items-center justify-center z-10 p-0" onclick="toggleBothGraphs(this)" title="Collapse/Expand Both Graphs">▼</button>
               <!-- Card content wrapper -->
               <div class="card-content">
-              <h3 style="color:#ffffff;margin:0 0 12px 0;text-align:center;">Profile 2 - 7 Day Trend</h3>
-              <canvas id="profile2Chart" style="max-height:250px;"></canvas>
+              <h3 class="text-white m-0 mb-3 text-center">Profile 2 - 7 Day Trend</h3>
+              <canvas id="profile2Chart" class="max-h-[250px]"></canvas>
               </div>
             </div>
           </div>
@@ -1933,7 +1980,7 @@
           const collapseBtn = document.createElement('button');
           collapseBtn.className = 'card-collapse-btn';
           collapseBtn.onclick = function() { toggleCardCollapse(this); };
-          collapseBtn.style.cssText = 'position:absolute;top:8px;right:8px;background:none;border:none;color:#9aa5c6;cursor:pointer;font-size:12px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;z-index:10;padding:0;';
+          collapseBtn.style.cssText = 'position:absolute;top:8px;right:8px;background:none;border:none;color:#dfe6ff;cursor:pointer;font-size:12px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;z-index:10;padding:0;';
           collapseBtn.title = 'Collapse/Expand';
           collapseBtn.textContent = '▼';
           container.appendChild(collapseBtn);
@@ -2040,7 +2087,7 @@
            const collapseBtn = document.createElement('button');
            collapseBtn.className = 'card-collapse-btn';
            collapseBtn.onclick = function() { toggleCardCollapse(this); };
-           collapseBtn.style.cssText = 'position:absolute;top:8px;right:8px;background:none;border:none;color:#9aa5c6;cursor:pointer;font-size:12px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;z-index:10;padding:0;';
+           collapseBtn.style.cssText = 'position:absolute;top:8px;right:8px;background:none;border:none;color:#dfe6ff;cursor:pointer;font-size:12px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;z-index:10;padding:0;';
            collapseBtn.title = 'Collapse/Expand';
            collapseBtn.textContent = '▼';
            container.appendChild(collapseBtn);

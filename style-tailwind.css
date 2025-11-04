@@ -1,0 +1,440 @@
+/* Tailwind-based styles - Converted from style.css */
+/* Most styling is now handled by Tailwind utility classes in HTML */
+/* This file contains only responsive overrides and complex selectors */
+
+/* ============================================
+   PORTRAIT (MONITOR) - Desktop Portrait Orientation
+   Optimized for 100% viewport (no zoom needed)
+   ============================================ */
+@media screen and (orientation: portrait) and (hover: hover) and (pointer: fine) {
+  html, body {
+    /* No zoom - designed for 100% viewport */
+    zoom: 1.0;
+    overflow: hidden !important;
+    height: 100vh !important;
+  }
+  
+  .wrap {
+    max-height: 100vh !important;
+    height: 100vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  
+  .wrap::-webkit-scrollbar {
+    display: none !important;
+  }
+  
+  /* Stack profiles vertically */
+  #profilesMainContainer {
+    flex-direction: column !important;
+    gap: 6px !important; /* Reduced from 8px */
+  }
+  
+  #profile1Section,
+  #profile2Section {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    gap: 6px !important; /* Reduced from 8px */
+    align-items: stretch !important;
+  }
+  
+  /* Reduce gap between card elements */
+  #profile1Card,
+  #profile2Card {
+    gap: 6px !important; /* Override Tailwind gap-4 */
+  }
+  
+  #spousalSignalsView {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Reduced padding on cards - scaled for 100% viewport */
+  #profile1Card,
+  #profile2Card,
+  #profile1ChartCard,
+  #profile2ChartCard {
+    padding: 8px !important; /* Reduced from 10px to eliminate wasted space */
+  }
+  
+  /* Smaller chart heights */
+  #profile1Chart,
+  #profile2Chart {
+    max-height: 140px !important; /* Reduced from 180px */
+  }
+  
+  /* Reduced typography spacing */
+  #profile1Card h3,
+  #profile2Card h3 {
+    margin: 0 0 4px 0 !important; /* Reduced from 6px */
+    font-size: 14px !important;
+  }
+  
+  #profile1ChartCard h3,
+  #profile2ChartCard h3 {
+    margin: 0 0 6px 0 !important; /* Reduced from 8px */
+    font-size: 12px !important;
+  }
+  
+  /* Smaller images */
+  #husbandImage,
+  #wifeImage {
+    height: 100px !important; /* Reduced from 120px */
+    width: calc(100px * 1.035) !important;
+  }
+  
+  /* Reduce internal spacing within profile cards */
+  #profile1Card > div:first-child,
+  #profile2Card > div:first-child {
+    padding-bottom: 0 !important;
+  }
+  
+  /* Reduce spacing between metric groups - override Tailwind mb-5, mt-4 classes */
+  #profile1Card > div:first-child > div.mb-5,
+  #profile2Card > div:first-child > div.mb-5 {
+    margin-bottom: 4px !important;
+  }
+  
+  #profile1Card > div:first-child > div.mt-4,
+  #profile2Card > div:first-child > div.mt-4 {
+    margin-top: 4px !important;
+  }
+  
+  /* Reduce spacing between all metric groups */
+  #profile1Card > div:first-child > div,
+  #profile2Card > div:first-child > div {
+    margin-bottom: 4px !important;
+  }
+  
+  #profile1Card > div:first-child > div:last-child,
+  #profile2Card > div:first-child > div:last-child {
+    margin-top: 4px !important;
+    margin-bottom: 0 !important;
+  }
+  
+  /* Reduce metric label margins */
+  #profile1Card [id*="HRV"] + div,
+  #profile1Card [id*="Sleep"] + div,
+  #profile1Card [id*="Wellness"] + div,
+  #profile2Card [id*="HRV"] + div,
+  #profile2Card [id*="Sleep"] + div,
+  #profile2Card [id*="Wellness"] + div {
+    margin-top: 2px !important;
+    margin-bottom: 2px !important;
+  }
+  
+  /* Ensure image container doesn't add extra height */
+  #profile1Card > div:last-child,
+  #profile2Card > div:last-child {
+    align-self: center !important;
+    padding: 0 !important;
+  }
+  
+  /* Reduced spacing for couple cards */
+  #coupleWellness,
+  #jointBurnoutCard {
+    margin-top: 6px !important; /* Reduced from 8px */
+    padding: 10px !important; /* Reduced from 12px */
+  }
+  
+  /* Tighter wrap padding */
+  .wrap {
+    padding: 6px 10px !important; /* Reduced from 8px 12px */
+  }
+  
+  /* Reduced header spacing */
+  .header {
+    margin-bottom: 6px !important; /* Reduced from 8px */
+  }
+  
+  /* Smaller profile card data section */
+  #profile1Card > div[style*="flex:0 0 200px"],
+  #profile2Card > div[style*="flex:0 0 200px"] {
+    flex: 0 0 120px !important; /* Reduced from 150px */
+  }
+  
+  /* Smaller font sizes for metrics */
+  #profile1Card [id*="HRV"],
+  #profile1Card [id*="Sleep"],
+  #profile1Card [id*="Wellness"],
+  #profile2Card [id*="HRV"],
+  #profile2Card [id*="Sleep"],
+  #profile2Card [id*="Wellness"] {
+    font-size: 20px !important; /* Reduced from 24px */
+    margin: 2px 0 !important; /* Reduced from 4px to eliminate wasted space */
+    line-height: 1.2 !important;
+  }
+  
+  /* Smaller metric labels - ensure light color for visibility */
+  #profile1Card [id*="HRV"] + div,
+  #profile1Card [id*="Sleep"] + div,
+  #profile1Card [id*="Wellness"] + div,
+  #profile2Card [id*="HRV"] + div,
+  #profile2Card [id*="Sleep"] + div,
+  #profile2Card [id*="Wellness"] + div {
+    font-size: 10px !important;
+    margin-top: 1px !important;
+    margin-bottom: 1px !important;
+    line-height: 1.2 !important;
+    color: #a9b3d8 !important; /* Light gray-blue for better visibility on dark background */
+  }
+  
+  /* Ensure text-muted class works in profile cards */
+  #profile1Card .text-muted,
+  #profile2Card .text-muted {
+    color: #a9b3d8 !important; /* Light gray-blue for better visibility */
+  }
+  
+  /* Reduce bottom navigation spacing */
+  #bottomNavigation {
+    padding: 8px 10px !important;
+    margin-top: 10px !important;
+  }
+  
+  /* Ensure proper stacking */
+  #spousalSignalsView {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  /* Add spacing between profile sections */
+  #profile1Section {
+    margin-bottom: 6px !important;
+  }
+}
+
+/* ============================================
+   LANDSCAPE/DESKTOP VIEW - Metric numbers and labels
+   Base styles for landscape orientation
+   ============================================ */
+/* Landscape/Desktop view - Larger numbers for HRV and Sleep Score - but smaller than Wellness Score */
+#profile1HRV,
+#profile2HRV,
+#profile1Sleep,
+#profile2Sleep {
+  font-size: 26px !important; /* Larger than default, but smaller than Wellness Score (28px) */
+}
+
+/* Smaller labels for all metrics */
+#profile1Card [id*="HRV"] + div,
+#profile1Card [id*="Sleep"] + div,
+#profile1Card [id*="Wellness"] + div,
+#profile2Card [id*="HRV"] + div,
+#profile2Card [id*="Sleep"] + div,
+#profile2Card [id*="Wellness"] + div {
+  color: #a9b3d8 !important; /* Light gray-blue for better visibility on dark background */
+  font-size: 10px !important; /* Reduced from 12px for more compact labels */
+}
+
+/* Ensure text-muted class works in profile cards (landscape view) */
+#profile1Card .text-muted,
+#profile2Card .text-muted {
+  color: #a9b3d8 !important; /* Light gray-blue for better visibility */
+  font-size: 10px !important; /* Match label size */
+}
+
+/* ============================================
+   MOBILE ORIENTATION - Hide graphs, stack cards
+   Applies to all mobile devices (390px and below)
+   ============================================ */
+@media screen and (max-width: 768px) {
+  /* Force vertical stacking - override any inline styles or Tailwind classes */
+  #profilesMainContainer {
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+    align-items: stretch !important;
+    display: flex !important;
+  }
+  
+  #profile1Section,
+  #profile2Section {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    gap: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  #profile1ChartCard,
+  #profile2ChartCard {
+    display: none !important;
+  }
+  
+  #profile1Card,
+  #profile2Card {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    flex: 0 0 auto !important; /* Prevent flex shrinking */
+  }
+  
+  #spousalSignalsView {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  
+  #profile1Section {
+    margin-bottom: 8px !important;
+  }
+  
+  #profile2Section {
+    margin-bottom: 0 !important;
+  }
+  
+  #coupleWellness,
+  #jointBurnoutCard {
+    margin-top: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Ensure cards don't overflow */
+  .card {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* ============================================
+   MULTIGRAIN-QUARTER - Ultra-compact <=400px
+   Also applies to 390px and below
+   ============================================ */
+@media screen and (max-width: 400px) {
+  html, body {
+    overflow-x: hidden !important;
+    height: 100vh !important;
+  }
+
+  .wrap {
+    max-width: 100% !important;
+    max-height: 100vh !important;
+    height: 100vh !important;
+    padding: 6px 8px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Force vertical stacking for ultra-small screens */
+  #profilesMainContainer {
+    flex-direction: column !important;
+    gap: 6px !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: stretch !important;
+  }
+
+  #profile1Section,
+  #profile2Section {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    gap: 6px !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  #profile1Card,
+  #profile2Card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  #profile1Card,
+  #profile2Card,
+  #profile1ChartCard,
+  #profile2ChartCard {
+    padding: 10px !important;
+    border-radius: 12px !important;
+  }
+
+  #profile1Chart,
+  #profile2Chart {
+    max-height: 120px !important;
+  }
+
+  #profile1Card h3,
+  #profile2Card h3 {
+    margin: 0 0 4px 0 !important;
+    font-size: 14px !important;
+  }
+
+  #profile1ChartCard h3,
+  #profile2ChartCard h3 {
+    margin: 0 0 6px 0 !important;
+    font-size: 12px !important;
+  }
+
+  #husbandImage,
+  #wifeImage {
+    height: 90px !important;
+    width: calc(90px * 1.035) !important;
+  }
+
+  #coupleWellness,
+  #jointBurnoutCard {
+    margin-top: 6px !important;
+    padding: 10px !important;
+  }
+
+  .wrap {
+    padding: 6px 8px !important;
+  }
+
+  .header {
+    margin-bottom: 6px !important;
+  }
+
+  #profile1Card > div[style*="flex:0 0 200px"],
+  #profile2Card > div[style*="flex:0 0 200px"] {
+    flex: 0 0 100px !important;
+  }
+
+  #profile1Card [id*="HRV"],
+  #profile1Card [id*="Sleep"],
+  #profile1Card [id*="Wellness"],
+  #profile2Card [id*="HRV"],
+  #profile2Card [id*="Sleep"],
+  #profile2Card [id*="Wellness"] {
+    font-size: 18px !important;
+    margin: 4px 0 !important;
+  }
+
+  #bottomNavigation {
+    padding: 6px 8px !important;
+  }
+
+  .muted {
+    font-size: 10px !important;
+  }
+  
+  label, .controls label {
+    font-size: 10px !important;
+  }
+  
+  select, input, .file-display {
+    padding: 6px !important;
+    font-size: 10px !important;
+  }
+}
+
+/* Portrait mode adjustments for mobile */
+@media screen and (orientation: portrait) and (max-width: 768px) {
+  .controls .logo-cell {
+    grid-row: 1;
+    margin-bottom: 8px;
+  }
+  .controls .profile-cell {
+    grid-row: 2;
+  }
+}
+

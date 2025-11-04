@@ -7,8 +7,20 @@ import pandas as pd
 from datetime import datetime, timedelta
 import sys
 import argparse
-import fcntl
-import os
+
+# Cross-platform file locking
+try:
+    import fcntl
+    HAS_FCNTL = True
+except ImportError:
+    HAS_FCNTL = False
+    # Windows alternative: use msvcrt for file locking
+    try:
+        import msvcrt
+        HAS_MSVCRT = True
+    except ImportError:
+        HAS_MSVCRT = False
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from auth.refresh_token import refresh_token
 from common.profile_paths import (
@@ -237,15 +249,53 @@ def fetch_hrv_period(end_str: str, period: str, token: str):
 
 
 def _safe_csv_write(csv_path, dataframe):
-    """Write CSV file with file locking to prevent race conditions"""
+    """Write CSV file with file locking to prevent race conditions (cross-platform)"""
     lock_path = csv_path + '.lock'
+    lockfile = None
     try:
-        with open(lock_path, 'w') as lockfile:
+        # Create lock file
+        if HAS_FCNTL:
+            # Unix/Linux: use fcntl with text file
+            lockfile = open(lock_path, 'w')
             fcntl.flock(lockfile.fileno(), fcntl.LOCK_EX)
-            dataframe.to_csv(csv_path, index=False)
+        elif HAS_MSVCRT:
+            # Windows: use msvcrt with binary file
+            lockfile = open(lock_path, 'wb')
+            msvcrt.locking(lockfile.fileno(), msvcrt.LK_LOCK, 1)
+        else:
+            # No locking available - create lock file as marker
+            lockfile = open(lock_path, 'w')
+            lockfile.write('locked')
+            lockfile.flush()
+        
+        # Write to temporary file first for atomic operation
+        temp_path = csv_path + '.tmp'
+        dataframe.to_csv(temp_path, index=False)
+        
+        # Atomically replace the original file
+        os.replace(temp_path, csv_path)
     except Exception as e:
+        # Clean up temp file if it exists
+        temp_path = csv_path + '.tmp'
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
         print(f"Error writing CSV with lock: {e}")
         raise
+    finally:
+        # Close and remove lock file
+        if lockfile:
+            try:
+                lockfile.close()
+            except Exception:
+                pass
+        if os.path.exists(lock_path):
+            try:
+                os.remove(lock_path)
+            except Exception:
+                pass
 
 
 def parse_hrv(json_data):

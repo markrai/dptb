@@ -1,8 +1,8 @@
-/* Desktop portrait-only scaling: increase viewport to 120% */
+/* Desktop portrait-only - Optimized for 100% viewport */
 @media screen and (orientation: portrait) and (hover: hover) and (pointer: fine) {
   html, body {
-    /* Non-standard but widely supported on desktop Chromium/Edge */
-    zoom: 1.2;
+    /* No zoom - designed for 100% viewport */
+    zoom: 1.0;
     /* Prevent body scrollbar in portrait */
     overflow: hidden !important;
     height: 100vh !important;
@@ -12,7 +12,7 @@
   .wrap {
     max-height: 100vh !important;
     height: 100vh !important;
-    margin: 0 auto !important; /* Remove vertical margin to fit viewport */
+    margin: 0 auto !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
     /* Hide scrollbar */
@@ -27,6 +27,7 @@
   /* Stack profiles vertically in portrait view: User 1 Section -> User 2 Section */
   #profilesMainContainer {
     flex-direction: column !important;
+    gap: 6px !important; /* Reduced for 100% viewport */
   }
   
   /* Make profile sections full width in portrait */
@@ -34,94 +35,203 @@
   #profile2Section {
     flex: 1 1 100% !important;
     width: 100% !important;
+    gap: 6px !important; /* Reduced for 100% viewport */
+    align-items: stretch !important;
   }
   
-  /* Hide collapse buttons in portrait view */
+  /* Reduce gap between card elements */
+  #profile1Card,
+  #profile2Card {
+    gap: 6px !important; /* Override Tailwind gap-4 */
+  }
+  
+  /* Collapse button styling - match other interactive elements */
+.card-collapse-btn {
+  color: #dfe6ff !important; /* Match button color for consistency */
+}
+
+.card-collapse-btn:hover {
+  color: #ffffff !important; /* Slightly lighter on hover */
+}
+
+/* Hide collapse buttons in portrait view */
+@media screen and (orientation: portrait) and (hover: hover) and (pointer: fine),
+       (max-width: 768px) {
   .card-collapse-btn {
     display: none !important;
   }
+}
   
   /* Reduce spacing in spousal signals view for portrait */
   #spousalSignalsView {
     padding: 0 !important;
     margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
   
-  #profilesMainContainer {
-    gap: 8px !important; /* Reduce gap between profile sections */
-  }
-  
-  #profile1Section,
-  #profile2Section {
-    gap: 8px !important; /* Reduce gap between card and graph within each section */
-  }
-  
-  /* Reduce padding on cards */
+  /* Reduce padding on cards - scaled for 100% viewport */
   #profile1Card,
   #profile2Card,
   #profile1ChartCard,
   #profile2ChartCard {
-    padding: 12px !important; /* Reduce from 20px */
+    padding: 8px !important; /* Reduced from 10px to eliminate wasted space */
   }
   
   /* Reduce chart heights */
   #profile1Chart,
   #profile2Chart {
-    max-height: 180px !important; /* Reduce from 250px */
+    max-height: 140px !important; /* Reduced from 180px */
   }
   
   /* Reduce margins and spacing in profile cards */
   #profile1Card h3,
   #profile2Card h3 {
-    margin: 0 0 6px 0 !important; /* Reduce from 10px */
+    margin: 0 0 4px 0 !important; /* Reduced from 6px */
+    font-size: 14px !important;
   }
   
   /* Reduce spacing in chart cards */
   #profile1ChartCard h3,
   #profile2ChartCard h3 {
-    margin: 0 0 8px 0 !important; /* Reduce from 12px */
+    margin: 0 0 6px 0 !important; /* Reduced from 8px */
+    font-size: 12px !important;
   }
   
   /* Reduce image sizes in profile cards */
   #husbandImage,
   #wifeImage {
-    height: 120px !important; /* Reduce from 160px */
-    width: calc(120px * 1.035) !important;
+    height: 100px !important; /* Reduced from 120px */
+    width: calc(100px * 1.035) !important;
+  }
+  
+  /* Reduce internal spacing within profile cards */
+  #profile1Card > div:first-child,
+  #profile2Card > div:first-child {
+    padding-bottom: 0 !important;
+  }
+  
+  /* Reduce spacing between metric groups - override Tailwind mb-5, mt-4 classes */
+  #profile1Card > div:first-child > div.mb-5,
+  #profile2Card > div:first-child > div.mb-5 {
+    margin-bottom: 4px !important;
+  }
+  
+  #profile1Card > div:first-child > div.mt-4,
+  #profile2Card > div:first-child > div.mt-4 {
+    margin-top: 4px !important;
+  }
+  
+  /* Reduce metric label margins */
+  #profile1Card [id*="HRV"] + div,
+  #profile1Card [id*="Sleep"] + div,
+  #profile1Card [id*="Wellness"] + div,
+  #profile2Card [id*="HRV"] + div,
+  #profile2Card [id*="Sleep"] + div,
+  #profile2Card [id*="Wellness"] + div {
+    margin-top: 2px !important;
+    margin-bottom: 2px !important;
+  }
+  
+  /* Ensure image container doesn't add extra height */
+  #profile1Card > div:last-child,
+  #profile2Card > div:last-child {
+    align-self: center !important;
+    padding: 0 !important;
   }
   
   /* Reduce couple wellness and joint burnout card spacing */
   #coupleWellness,
   #jointBurnoutCard {
-    margin-top: 8px !important; /* Reduce from 16px */
-    padding: 12px !important; /* Reduce from 20px */
+    margin-top: 6px !important; /* Reduced from 8px */
+    padding: 10px !important; /* Reduced from 12px */
   }
   
   /* Reduce wrap padding */
   .wrap {
-    padding: 8px 12px !important; /* Reduce from 0 16px */
+    padding: 6px 10px !important; /* Reduced from 8px 12px */
   }
   
   /* Reduce header spacing */
   .header {
-    margin-bottom: 8px !important; /* Reduce from 16px */
+    margin-bottom: 6px !important; /* Reduced from 8px */
   }
   
   /* Reduce profile card data section width */
   #profile1Card > div[style*="flex:0 0 200px"],
   #profile2Card > div[style*="flex:0 0 200px"] {
-    flex: 0 0 150px !important; /* Reduce from 200px */
+    flex: 0 0 120px !important; /* Reduced from 150px */
   }
   
-  /* Reduce font sizes in profile cards slightly */
+  /* Reduce font sizes in profile cards - scaled for 100% viewport */
   #profile1Card [id*="HRV"],
   #profile1Card [id*="Sleep"],
   #profile1Card [id*="Wellness"],
   #profile2Card [id*="HRV"],
   #profile2Card [id*="Sleep"],
   #profile2Card [id*="Wellness"] {
-    font-size: 24px !important; /* Reduce from 32px */
-    margin: 6px 0 !important; /* Reduce from 10px */
+    font-size: 20px !important; /* Reduced from 24px */
+    margin: 2px 0 !important; /* Reduced from 4px to eliminate wasted space */
+    line-height: 1.2 !important;
   }
+  
+  /* Smaller metric labels - ensure light color for visibility */
+  #profile1Card [id*="HRV"] + div,
+  #profile1Card [id*="Sleep"] + div,
+  #profile1Card [id*="Wellness"] + div,
+  #profile2Card [id*="HRV"] + div,
+  #profile2Card [id*="Sleep"] + div,
+  #profile2Card [id*="Wellness"] + div {
+    font-size: 10px !important;
+    margin-top: 1px !important;
+    margin-bottom: 1px !important;
+    line-height: 1.2 !important;
+    color: #a9b3d8 !important; /* Light gray-blue for better visibility on dark background */
+  }
+  
+  /* Ensure text-muted class works in profile cards */
+  #profile1Card .text-muted,
+  #profile2Card .text-muted {
+    color: #a9b3d8 !important; /* Light gray-blue for better visibility */
+  }
+  
+  /* Add spacing between profile sections */
+  #profile1Section {
+    margin-bottom: 6px !important;
+  }
+  
+  /* Reduce bottom navigation */
+  #bottomNavigation {
+    padding: 8px 10px !important;
+    margin-top: 10px !important;
+  }
+}
+
+/* Landscape/Desktop view - Metric numbers and labels */
+/* Larger numbers for HRV and Sleep Score - but smaller than Wellness Score */
+#profile1HRV,
+#profile2HRV,
+#profile1Sleep,
+#profile2Sleep {
+  font-size: 26px !important; /* Larger than default, but smaller than Wellness Score (28px) */
+}
+
+/* Smaller labels for all metrics */
+#profile1Card [id*="HRV"] + div,
+#profile1Card [id*="Sleep"] + div,
+#profile1Card [id*="Wellness"] + div,
+#profile2Card [id*="HRV"] + div,
+#profile2Card [id*="Sleep"] + div,
+#profile2Card [id*="Wellness"] + div {
+  color: #a9b3d8 !important; /* Light gray-blue for better visibility on dark background */
+  font-size: 10px !important; /* Reduced from 12px for more compact labels */
+}
+
+/* Ensure text-muted class works in profile cards (landscape view) */
+#profile1Card .text-muted,
+#profile2Card .text-muted {
+  color: #a9b3d8 !important; /* Light gray-blue for better visibility */
+  font-size: 10px !important; /* Match label size */
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Racing+Sans+One&display=swap');
