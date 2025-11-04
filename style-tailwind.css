@@ -273,6 +273,14 @@
     max-width: 100% !important;
     box-sizing: border-box !important;
     flex: 0 0 auto !important; /* Prevent flex shrinking */
+    display: flex !important; /* Ensure flex layout */
+    padding: 12px !important; /* Match couple wellness padding */
+  }
+  
+  /* Ensure internal flex sections don't constrain card width */
+  #profile1Card > div,
+  #profile2Card > div {
+    min-width: 0 !important; /* Allow flex items to shrink */
   }
   
   #spousalSignalsView {
@@ -294,6 +302,7 @@
     margin-top: 8px !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    padding: 12px !important; /* Match profile cards */
   }
   
   /* Ensure cards don't overflow */
@@ -347,6 +356,13 @@
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
+    display: flex !important; /* Ensure flex layout */
+  }
+  
+  /* Ensure internal flex sections don't constrain card width */
+  #profile1Card > div,
+  #profile2Card > div {
+    min-width: 0 !important; /* Allow flex items to shrink */
   }
 
   #profile1Card,
@@ -355,6 +371,14 @@
   #profile2ChartCard {
     padding: 10px !important;
     border-radius: 12px !important;
+  }
+  
+  /* Ensure couple wellness and joint burnout match profile cards */
+  #coupleWellness,
+  #jointBurnoutCard {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 10px !important; /* Match profile cards */
   }
 
   #profile1Chart,
