@@ -729,6 +729,30 @@
     </div>
   </div>
 
+  <!-- Create Second Profile Prompt Modal -->
+  <div id="createSecondProfileModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Create Second Profile</h2>
+        <button class="modal-close" id="createSecondProfileClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="status-message info" style="text-align:left">
+          <p id="createSecondProfileMessage" style="margin:0 0 12px 0;color:#e6eaf3;font-size:15px;line-height:1.5;">
+            You currently have one profile. To use the full features of this app, please create a second profile.
+          </p>
+          <p style="margin:0;color:#9aa5c6;font-size:14px;">
+            Click OK to create your second profile.
+          </p>
+        </div>
+        <div class="form-actions" style="margin-top:20px;display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn-secondary" id="createSecondProfileCancelBtn">Cancel</button>
+          <button class="btn-primary" id="createSecondProfileOkBtn">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Flag to prevent script.js from running its initialization
     window.SKIP_MAIN_INIT = true;
@@ -863,11 +887,36 @@
         if (profiles.length === 0) {
           // Show no profiles state
           if (noProfilesState) noProfilesState.style.display = 'block';
+          // Automatically show the modal to create first profile
+          // Use setTimeout to ensure showNoProfileModal is defined
+          setTimeout(() => {
+            if (typeof window.showNoProfileModal === 'function') {
+              window.showNoProfileModal(false);
+            }
+          }, 100);
           return;
         }
         
         // Hide no profiles state
         if (noProfilesState) noProfilesState.style.display = 'none';
+        
+        // Check if only one profile exists
+        if (profiles.length === 1) {
+          // Show styled modal to create second profile
+          const profile1Name = typeof profiles[0] === 'string' ? profiles[0] : profiles[0].name;
+          // Use setTimeout to ensure showCreateSecondProfilePrompt is defined
+          setTimeout(async () => {
+            if (typeof window.showCreateSecondProfilePrompt === 'function') {
+              const shouldCreateSecond = await window.showCreateSecondProfilePrompt(profile1Name);
+              if (shouldCreateSecond) {
+                // Show the modal to create second profile
+                if (typeof window.showNoProfileModal === 'function') {
+                  window.showNoProfileModal(true);
+                }
+              }
+            }
+          }, 100);
+        }
         
         // Display first two profiles (only if elements exist)
         if (profiles.length >= 1) {
@@ -2747,6 +2796,7 @@
             const authorizeProfileModal = document.getElementById('authorizeProfileModal');
             const authAckModal = document.getElementById('authAckModal');
             const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+            const createSecondProfileModal = document.getElementById('createSecondProfileModal');
             
             if (noProfileModal && noProfileModal.style.display === 'block') {
               hideNoProfileModal();
@@ -2758,6 +2808,8 @@
               hideAuthAckModal();
             } else if (confirmDeleteModal && confirmDeleteModal.style.display === 'block') {
               hideConfirmDeleteModal();
+            } else if (createSecondProfileModal && createSecondProfileModal.classList.contains('active')) {
+              createSecondProfileModal.classList.remove('active');
             }
           }
         });
@@ -3392,6 +3444,40 @@
        });
      }
      
+     // Create second profile prompt (returns Promise<boolean>)
+     window.showCreateSecondProfilePrompt = function(profileName){
+       return new Promise((resolve) => {
+         const modal = document.getElementById('createSecondProfileModal');
+         const okBtn = document.getElementById('createSecondProfileOkBtn');
+         const cancelBtn = document.getElementById('createSecondProfileCancelBtn');
+         const closeBtn = document.getElementById('createSecondProfileClose');
+         const messageEl = document.getElementById('createSecondProfileMessage');
+         
+         if (!modal || !okBtn){ resolve(false); return; }
+         
+         // Update message with profile name
+         if (messageEl) {
+           messageEl.textContent = `You currently have one profile (${profileName}). To use the full features of this app, please create a second profile.`;
+         }
+         
+         function cleanup(){
+           if (okBtn) okBtn.removeEventListener('click', onOk);
+           if (cancelBtn) cancelBtn.removeEventListener('click', onCancel);
+           if (closeBtn) closeBtn.removeEventListener('click', onCancel);
+           modal.removeEventListener('click', onBackdrop);
+         }
+         function onOk(){ cleanup(); modal.classList.remove('active'); resolve(true); }
+         function onCancel(){ cleanup(); modal.classList.remove('active'); resolve(false); }
+         function onBackdrop(e){ if (e.target === modal){ onCancel(); } }
+         
+         okBtn.addEventListener('click', onOk);
+         if (cancelBtn) cancelBtn.addEventListener('click', onCancel);
+         if (closeBtn) closeBtn.addEventListener('click', onCancel);
+         modal.addEventListener('click', onBackdrop);
+         modal.classList.add('active');
+       });
+     }
+     
      // Authorization for existing profiles (opens dedicated modal)
      window.authorizeExistingProfile = async function(profileName){
        try{
@@ -3849,6 +3935,11 @@
          const confirmDeleteModal = document.getElementById('confirmDeleteModal');
          if (confirmDeleteModal && confirmDeleteModal.classList.contains('active')) {
            confirmDeleteModal.classList.remove('active');
+         }
+         
+         const createSecondProfileModal = document.getElementById('createSecondProfileModal');
+         if (createSecondProfileModal && createSecondProfileModal.classList.contains('active')) {
+           createSecondProfileModal.classList.remove('active');
          }
        }
      });
