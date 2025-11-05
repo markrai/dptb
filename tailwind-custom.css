@@ -9,7 +9,7 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
-/* Modal Styles - Ensure modals are hidden by default */
+/* Modal Styles - Restore pre-Tailwind behavior */
 #aboutModal,
 #noProfileModal,
 .modal-overlay {
@@ -20,7 +20,7 @@
   height: 100% !important;
   background: rgba(0, 0, 0, 0.8) !important;
   z-index: 1000 !important;
-  display: none !important; /* Hidden by default - CRITICAL */
+  display: flex !important; /* Always flex for proper layout */
   align-items: center !important;
   justify-content: center !important;
   opacity: 0 !important;
@@ -32,7 +32,6 @@
 #aboutModal.active,
 #noProfileModal.active,
 .modal-overlay.active {
-  display: flex !important; /* Show when active */
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important; /* Enable interaction when active */
@@ -161,6 +160,203 @@
   font-size: 16px !important;
   margin: 0 !important;
   color: #9aa5c6 !important;
+}
+
+/* Profile Creation Form Styles - Restore pre-Tailwind styling */
+.form-group {
+  margin-bottom: 16px !important;
+}
+
+.form-group label {
+  display: block !important;
+  margin-bottom: 4px !important;
+  font-weight: 600 !important;
+  color: #e0e6ed !important;
+  font-size: 14px !important;
+}
+
+.form-group input,
+.form-group select {
+  width: 85% !important;
+  padding: 8px 12px !important;
+  border: 1px solid #4a5568 !important;
+  border-radius: 6px !important;
+  background: #2d3748 !important;
+  color: #e0e6ed !important;
+  font-size: 14px !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none !important;
+  border-color: #4a90e2 !important;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2) !important;
+}
+
+.form-group input::placeholder {
+  color: #9aa5c6 !important;
+}
+
+.form-actions {
+  margin-top: 20px !important;
+  text-align: center !important;
+}
+
+.btn-primary {
+  background: #4a90e2 !important;
+  color: white !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.btn-primary:hover {
+  background: #357abd !important;
+}
+
+.btn-primary:disabled {
+  background: #6b7280 !important;
+  cursor: not-allowed !important;
+}
+
+.btn-secondary {
+  background: #4a90e2 !important;
+  color: white !important;
+  border: none !important;
+  padding: 6px 12px !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.btn-secondary:hover {
+  background: #357abd !important;
+}
+
+.btn-danger {
+  background: #ff6b6b !important;
+  color: white !important;
+  border: none !important;
+  padding: 6px 12px !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.btn-danger:hover {
+  background: #ff5252 !important;
+}
+
+.status-message {
+  margin-top: 12px !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  text-align: center !important;
+}
+
+.status-message.success {
+  background: rgba(123, 255, 191, 0.1) !important;
+  color: #7bffbf !important;
+  border: 1px solid rgba(123, 255, 191, 0.3) !important;
+}
+
+.status-message.error {
+  background: rgba(255, 155, 155, 0.1) !important;
+  color: #ff9b9b !important;
+  border: 1px solid rgba(255, 155, 155, 0.3) !important;
+}
+
+.status-message.info {
+  background: rgba(154, 165, 198, 0.1) !important;
+  color: #9aa5c6 !important;
+  border: 1px solid rgba(154, 165, 198, 0.3) !important;
+}
+
+/* Tab Navigation Styles - Restore pre-Tailwind styling */
+.tab-navigation {
+  display: flex !important;
+  border-bottom: 1px solid #1a2349 !important;
+  margin-bottom: 20px !important;
+}
+
+.tab-btn {
+  background: none !important;
+  border: none !important;
+  padding: 12px 20px !important;
+  color: #9aa5c6 !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  border-bottom: 2px solid transparent !important;
+  transition: all 0.2s ease !important;
+  flex: 1 !important;
+}
+
+.tab-btn:hover {
+  color: #e0e6ed !important;
+  background: rgba(154, 165, 198, 0.05) !important;
+}
+
+.tab-btn.active {
+  color: #4a90e2 !important;
+  border-bottom-color: #4a90e2 !important;
+  background: rgba(74, 144, 226, 0.05) !important;
+}
+
+.tab-content {
+  display: none !important;
+}
+
+.tab-content.active {
+  display: block !important;
+}
+
+/* Profile item styles */
+.profile-item {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 12px !important;
+  margin-bottom: 8px !important;
+  background: #1a2349 !important;
+  border-radius: 8px !important;
+  border: 1px solid #263266 !important;
+}
+
+.profile-info {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.profile-name {
+  font-weight: 600 !important;
+  color: #e6eaf3 !important;
+  font-size: 14px !important;
+}
+
+.profile-details {
+  font-size: 12px !important;
+  color: #9aa5c6 !important;
+}
+
+.profile-actions {
+  display: flex !important;
+  gap: 8px !important;
+}
+
+/* Add spacing between success text and authorize button */
+#profileCreatedSuccess #authorizeBtn {
+  margin-top: 12px !important;
 }
 
 .modal-footer {
