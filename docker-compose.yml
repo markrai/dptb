@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  fitbaus:
+  dptb:
     build: .
-    container_name: fitbaus-app
+    container_name: dptb-app
     # Optional (Linux): run container as your host user to avoid bind-mount permission issues
     # user: "${UID:-10001}:${GID:-10001}"
     ports:
@@ -25,4 +25,4 @@ services:
     deploy:
       replicas: 1
     # Remove stdin_open and tty for production
-    # To access the container for setup, use: docker exec -it fitbaus-app bash
+    # To access the container for setup, use: docker exec -it dptb-app bash

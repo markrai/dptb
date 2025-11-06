@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  fitbaus:
+  dptb:
     build: .
-    container_name: fitbaus-app
+    container_name: dptb-app
     ports:
       - "9155:9000"
     volumes:
