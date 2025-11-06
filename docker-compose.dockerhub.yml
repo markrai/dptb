@@ -16,6 +16,7 @@ services:
       # Required: Set your Fitbit Developer App credentials
       - FITBIT_CLIENT_ID=${FITBIT_CLIENT_ID}
       - FITBIT_CLIENT_SECRET=${FITBIT_CLIENT_SECRET}
+      - PORT=9156
       # Optional: Set timezone
       - TZ=${TZ:-America/New_York}
       # Optional: Set log level
@@ -23,7 +24,7 @@ services:
     restart: unless-stopped
     # Health check
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:9156/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3

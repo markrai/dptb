@@ -8,14 +8,14 @@ services:
     user: "10001:10001"
     
     ports:
-      - "9156:9156"   # Web UI (host:container)
+      - "9156:9000"   # Web UI (host:container)
     
     volumes:
-      # Synology-specific volume mounts for data persistence
-      - /volume1/docker/fitbaus/profiles:/app/profiles
-      - /volume1/docker/fitbaus/logs:/app/logs
+      # Synology-specific volume mounts for data persistence (updated root path)
+      - /volume1/docker/dptb/profiles:/app/profiles
+      - /volume1/docker/dptb/logs:/app/logs
       # Optional: Mount config directory for easy management
-      - /volume1/docker/fitbaus/config:/app/config:ro
+      - /volume1/docker/dptb/config:/app/config:ro
     
     environment:
       - PYTHONIOENCODING=utf-8
@@ -25,7 +25,7 @@ services:
       - WORKERS=1                  # Single worker for NAS efficiency
       - LOG_LEVEL=info
       # Fitbit OAuth settings (update with your domain)
-      - FITBIT_REDIRECT_URI=https://your-nas-domain.com:9000/callback
+      - FITBIT_REDIRECT_URI=https://your-nas-domain.com:9156/callback
       - FITBIT_CLIENT_ID=${FITBIT_CLIENT_ID}
       - FITBIT_CLIENT_SECRET=${FITBIT_CLIENT_SECRET}
     
