@@ -25,7 +25,7 @@ services:
       - WORKERS=1                  # Single worker for NAS efficiency
       - LOG_LEVEL=info
       # Fitbit OAuth settings (update with your domain)
-      - FITBIT_REDIRECT_URI=https://your-nas-domain.com:9156/callback
+      - FITBIT_REDIRECT_URI=https://localhost:8080/callback
       - FITBIT_CLIENT_ID=${FITBIT_CLIENT_ID}
       - FITBIT_CLIENT_SECRET=${FITBIT_CLIENT_SECRET}
     
