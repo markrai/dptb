@@ -108,9 +108,15 @@ services:
 
 For inquiries, contact: markraidc@gmail.com
 
+## Acknowledgements
+
+Husband/Wife images 1-5 created by Ayza Siddiqi
+
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 
 ---
 
