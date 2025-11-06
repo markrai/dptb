@@ -630,6 +630,9 @@ def create_profile():
         if os.path.exists(profile_dir):
             return jsonify({'error': f'Profile "{profile_name}" already exists'}), 400
         
+        # Ensure base profiles directory exists
+        os.makedirs('profiles', exist_ok=True)
+        
         # Create profile directory structure
         try:
             os.makedirs(f'{profile_dir}/auth', exist_ok=True)
@@ -637,10 +640,10 @@ def create_profile():
         except PermissionError as pe:
             # Provide a helpful message for common Docker-on-Linux bind-mount issues
             msg = (
-                "Permission denied creating profile directories. If running with Docker on Linux, "
-                "ensure the host 'profiles' directory is writable by the container user (uid 10001). "
-                "Try one of: `sudo chown -R 10001:10001 profiles`, or set `user: \"${UID:-10001}:${GID:-10001}\"` "
-                "in docker-compose.yml, or relax permissions: `chmod -R 775 profiles`."
+                "Permission denied creating profile directories. If running with Docker on Linux/Synology, "
+                "ensure the host 'profiles' directory is writable by the container user. "
+                "For root user (0:0): `sudo chown -R 0:0 /volume1/docker/dptb/profiles && chmod -R 775 /volume1/docker/dptb/profiles`. "
+                "For custom UID/GID, use your container user's UID:GID instead."
             )
             print(f"Error creating profile (permissions): {pe}")
             return jsonify({

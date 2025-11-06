@@ -4,8 +4,8 @@ services:
   dptb:
     image: markraidc/dont-poke-the-bear:latest
     container_name: dptb-app
-    # Run as non-root user for security
-    user: "10001:10001"
+    # Run as root user (matching reference pattern)
+    user: "0:0"
     
     ports:
       - "9156:9000"   # Web UI (host:container)
